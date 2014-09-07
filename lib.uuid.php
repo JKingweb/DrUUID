@@ -248,7 +248,7 @@ class UUID {
   // Get the specified number of bits with as much randomness as possible
   // Randomness is returned as a string of bytes
   $source = @fopen('/dev/urandom','rb');
-  if ($Source===FALSE)
+  if ($source===FALSE)
    $source = @fopen('/dev/egd-pool','rb');
   if ($source !== FALSE) { // Unix-like
    $rand = fread($source,$bytes);
