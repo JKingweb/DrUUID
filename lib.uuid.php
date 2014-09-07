@@ -7,7 +7,7 @@
    See http://jkingweb.ca/code/php/lib.uuid/
     for documentation
     
-   Last revised 2009-04-11
+   Last revised 2009-04-13
 */
 
 /*
@@ -98,7 +98,7 @@ class UUID {
  }
 
  public function __toString() {
-  return this->string;
+  return $this->string;
  }
 
  public function __get($var) {
@@ -219,7 +219,7 @@ class UUID {
     break;
    case self::SHA1:
     $version = self::version5;
-    $uuis = substr(sha1($ns.$node,1),0, 16);
+    $uuid = substr(sha1($ns.$node,1),0, 16);
     break;
   }
   // set variant
@@ -238,7 +238,7 @@ class UUID {
    return $str;
   else
    $str = preg_replace("/[^a-f0-9]/is", "", $str);
-   if (strlen($str) != $len * 2)
+   if (strlen($str) != ($len * 2))
     return FALSE;
    else
     return pack("H*", $str);
