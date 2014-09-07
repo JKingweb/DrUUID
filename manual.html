@@ -107,7 +107,7 @@
 <div id="note">
  <h2>Documentation note</h2>
  <p>This manual often makes references to <dfn>binary and hexdecimal strings</dfn> for input and output.  For the sake of simplicity please assume that such strings are always in network order (big-endian).
- <p id="note-uuid">For methods accepting <dfn>a UUID</dfn> as a argument, the UUID may be: 
+ <p id="note-uuid">For methods accepting <dfn>a UUID</dfn> as an argument, the UUID may be: 
  <ul>
   <li>in canonical form, with or without curly braces
   <li>a 16-byte binary string (fastest)
@@ -131,7 +131,7 @@
     <br>
      <samp><var>UUID</var> UUID::mint( 1 [, <var>string node</var> [, <var>string sequence</var> [, <var>string time</var> ]]] )</samp>
     <p>Version 1 UUIDs (the default type) are generated based on the current time and a MAC address (called a <i>node</i>).  
-    <p>If specified, <var>node</var> should be either an 6-byte binary string or a 12-character hexadecimal string (with or without separators) representing a MAC address.  DrUUID does not attempt to detect the host's MAC address.  Invalid nodes will throw an exception.
+    <p>If specified, <var>node</var> should be either a 6-byte binary string or a 12-character hexadecimal string (with or without separators) representing a MAC address.  DrUUID does not attempt to detect the host's MAC address.  Invalid nodes will throw an exception.
     <p>The <var>sequence</var> argument specifies a clock sequence and should be a two-byte binary string.  This should only be used for debugging.  Invalid sequences will throw an exception.
     <p>Finally, the <var>time</var> argument may be specified to employ a past or future time (as a Unix timestamp with microseconds like that returned by <code>microtime()</code> for example) instead of the curent time.  This should only be used for debugging and never used to generate UUIDs for any purpose but testing.  Input which cannot be parsed as a timestamp will throw an exception.
    <h4 id="api-mint-v3">Version 3</h4>
