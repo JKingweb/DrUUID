@@ -87,15 +87,16 @@
 
 <div id="note">
  <h2>Documentation note</h2>
- <p>This manual often makes references to binary and hexdecimal strings for input and output.  For the sake of simplicity please assume that such strings are always in network order (big-endian).
- <p id="note-uuid">For methods accepting a UUID as a parameter, the UUID may be: 
+ <p>This manual often makes references to <dfn>binary and hexdecimal strings</dfn> for input and output.  For the sake of simplicity please assume that such strings are always in network order (big-endian).
+ <p id="note-uuid">For methods accepting <dfn>a UUID</dfn> as a parameter, the UUID may be: 
  <ul>
   <li>in canonical form, with or without curly braces
-  <li>as a 16-byte binary string (fastest)
-  <li>as a 32-character hexadecimal string
-  <li>as an RFC 4122 URN
+  <li>a 16-byte binary string (fastest)
+  <li>a 32-character hexadecimal string
+  <li>an RFC 4122 URN
   <li>a <a href="#the-object"><code>UUID</code> object</a>
  </ul>
+ <p>This manual often makes reference to <dfn>invalid UUIDs</dfn>.  For simplicity this is merely any string more or less than 16 bytes long.  DrUUID performs no other validation on UUIDs.
 </div>
 
 <div id="api">
@@ -138,6 +139,7 @@
   <div>
    <p class="samp"><samp><var>bool</var> UUID::compare( <var>mixed uuid1</var>, <var>mixed uuid2</var> )</samp>
    <p>The <code>UUID::compare()</code> method compares <a href="#note-uuid">two UUIDs</a> for equivalency.  If both UUIDs, as binary numbers, are equal, the method returns <samp>TRUE</samp>.  The method will also return <samp>TRUE</samp> if neither arguments is a valid UUID.
+   <p>This method is useful for determining if two different UUID representations (eg. canonical string, lowercase hex string, uppercase hex string, binary, URN) are in fact the same UUID.
   </div>
 </div>
 <div id="the-object">
@@ -243,6 +245,8 @@ OTHER DEALINGS IN THE SOFTWARE.</pre>
 
 <h2 id="append-history">Revision history</h2>
 <dl>
+ <dt><a href="http://jkingweb.ca/code/php/lib.uuid/archives?rev=20100215">2010-02-15</a>
+  <dd>Fixed bug in <code>UUID::import</code> as reported by Sander van Lambalgen.
  <dt><a href="http://jkingweb.ca/code/php/lib.uuid/archives?rev=20091126">2009-11-26</a>
   <dd>Fixed previously non-functional <code>UUID::compare()</code> method.  Also allowed input UUIDs to be RFC 4122 URNs.
  <dt><a href="http://jkingweb.ca/code/php/lib.uuid/archives?rev=20091111">2009-11-11</a>

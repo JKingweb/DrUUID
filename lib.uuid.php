@@ -7,7 +7,7 @@
    See http://jkingweb.ca/code/php/lib.uuid/
     for documentation
     
-   Last revised 2009-11-26
+   Last revised 2010-02-15
 */
 
 /*
@@ -87,7 +87,7 @@ class UUID {
 
  public static function import($uuid) {
   /* Import an existing UUID. */
-  return new self(makeBin($uuid, 16));
+  return new self(self::makeBin($uuid, 16));
  }   
 
  public static function compare($a, $b) {
