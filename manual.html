@@ -93,6 +93,7 @@
   <li>in canonical form, with or without curly braces
   <li>as a 16-byte binary string (fastest)
   <li>as a 32-character hexadecimal string
+  <li>as an RFC 4122 URN
   <li>a <a href="#the-object"><code>UUID</code> object</a>
  </ul>
 </div>
@@ -242,6 +243,8 @@ OTHER DEALINGS IN THE SOFTWARE.</pre>
 
 <h2 id="append-history">Revision history</h2>
 <dl>
+ <dt><a href="http://jkingweb.ca/code/php/lib.uuid/archives?rev=20091126">2009-11-26</a>
+  <dd>Fixed previously non-functional <code>UUID::compare()</code> method.  Also allowed input UUIDs to be RFC 4122 URNs.
  <dt><a href="http://jkingweb.ca/code/php/lib.uuid/archives?rev=20091111">2009-11-11</a>
   <dd>Various changes:
    <ul>

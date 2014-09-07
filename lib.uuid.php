@@ -7,7 +7,7 @@
    See http://jkingweb.ca/code/php/lib.uuid/
     for documentation
     
-   Last revised 2009-11-11
+   Last revised 2009-11-26
 */
 
 /*
@@ -94,7 +94,7 @@ class UUID {
   /* Compares the binary representations of two UUIDs.
      The comparison will return true if they are bit-exact,
       or if neither is valid. */
-  if (self::makeBin($a)==self::makeBin($b))
+  if (self::makeBin($a, 16)==self::makeBin($b, 16))
    return TRUE;
   else
    return FALSE;
@@ -242,7 +242,8 @@ class UUID {
   if (strlen($str)==$len)
    return $str;
   else
-   $str = preg_replace("/[^a-f0-9]/is", "", $str);
+   $str = preg_replace("/^urn:uuid:/is", "", $str); // strip URN scheme and namespace
+   $str = preg_replace("/[^a-f0-9]/is", "", $str);  // strip non-hex characters
    if (strlen($str) != ($len * 2))
     return FALSE;
    else
