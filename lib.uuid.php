@@ -7,7 +7,7 @@
    See http://jkingweb.ca/code/php/lib.uuid/
     for documentation
     
-   Last revised 2009-04-13
+   Last revised 2009-11-11
 */
 
 /*
@@ -39,7 +39,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 class UUID {
  const MD5  = 3;
  const SHA1 = 5;
- const clearVer = 15;  // 00001111  Clears all bites of version byte with AND
+ const clearVer = 15;  // 00001111  Clears all bits of version byte with AND
  const clearVar = 63;  // 00111111  Clears all relevant bits of variant byte with AND
  const varRes   = 224; // 11100000  Variant reserved for future use
  const varMS    = 192; // 11000000  Microsft GUID variant
@@ -50,10 +50,13 @@ class UUID {
  const version4 = 64;  // 01000000
  const version5 = 80;  // 01010000
  const interval = 0x01b21dd213814000; // Time (in 100ns steps) between the start of the UTC and Unix epochs
- const nsDNS  = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
- const nsURL  = "6ba7b811-9dad-11d1-80b4-00c04fd430c8";
- const nsOID  = "6ba7b812-9dad-11d1-80b4-00c04fd430c8";
- const nsX500 = "6ba7b814-9dad-11d1-80b4-00c04fd430c8";
+ const nsDNS  = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+ const nsURL  = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
+ const nsOID  = '6ba7b812-9dad-11d1-80b4-00c04fd430c8';
+ const nsX500 = '6ba7b814-9dad-11d1-80b4-00c04fd430c8';
+ protected static $randomFunc = 'randomTwister';
+ protected static $randomSource = NULL;
+ //instance properties
  protected $bytes;
  protected $hex;
  protected $string;
@@ -126,6 +129,8 @@ class UUID {
    case "node":
     if (ord($this->bytes[6])>>4==1)
      return bin2hex(substr($this->bytes,10));
+    else
+     return NULL; 
    case "time":
     if (ord($this->bytes[6])>>4==1) {
      // Restore contiguous big-endian byte order
@@ -244,23 +249,49 @@ class UUID {
     return pack("H*", $str);
  }
 
- public static function randomBytes($bytes) {
-  // Get the specified number of bits with as much randomness as possible
-  // Randomness is returned as a string of bytes
-  $source = @fopen('/dev/urandom','rb');
-  if ($source===FALSE)
-   $source = @fopen('/dev/egd-pool','rb');
-  if ($source !== FALSE) { // Unix-like
-   $rand = fread($source,$bytes);
-   fclose($source);
+ public static function initRandom() {
+  /* Look for a system-provided source of randomness, which is usually crytographically secure.
+     /dev/urandom is tried first simply out of bias for Linux systems. */
+  if (is_readable('/dev/urandom')) {
+   self::$randomSource = fopen('/dev/urandom', 'rb');
+   self::$randomFunc = 'randomFRead';
   }
-  else { // mt_rand() fallback
-   $rand = "";
-   for ($a = 0; $a < $bytes; $a++) {
-    $rand .= chr(mt_rand(0, 255));
+  else if (class_exists('COM', 0)) {
+   try {
+    self::$randomSource = new COM('CAPICOM.Utilities.1');  // See http://msdn.microsoft.com/en-us/library/aa388182(VS.85).aspx
+    self::$randomFunc = 'randomCOM';
    }
+   catch(Exception $e) {}
+  }
+  return self::$randomFunc;
+ } 
+
+ public static function randomBytes($bytes) {
+  return call_user_func(array('self', self::$randomFunc), $bytes);
+ } 
+
+ protected static function randomTwister($bytes) {
+  /* Get the specified number of random bytes, using mt_rand().
+     Randomness is returned as a string of bytes. */
+  $rand = "";
+  for ($a = 0; $a < $bytes; $a++) {
+   $rand .= chr(mt_rand(0, 255));
   } 
   return $rand;
+ }
+ 
+ protected static function randomFRead($bytes) {
+  /* Get the specified number of random bytes using a file handle 
+     previously opened with UUID::initRandom().
+     Randomness is returned as a string of bytes. */
+  return fread(self::$randomSource, $bytes);
+ }
+ 
+ protected static function randomCOM($bytes) {
+  /* Get the specified number of random bytes using Windows'
+     randomness source via a COM object previously created by UUID::initRandom().
+     Randomness is returned as a string of bytes. */
+  return base64_decode(self::$randomSource->GetRandom($bytes,0)); // straight binary mysteriously doesn't work, hence the base64
  }
 }
 
