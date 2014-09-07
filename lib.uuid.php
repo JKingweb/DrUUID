@@ -7,7 +7,7 @@
    See http://jkingweb.ca/code/php/lib.uuid/
     for documentation
     
-   Last revised 2010-02-15
+   Last revised 2011-03-20
 */
 
 /*
@@ -49,7 +49,7 @@ class UUID {
  const version3 = 48;  // 00110000
  const version4 = 64;  // 01000000
  const version5 = 80;  // 01010000
- const interval = 0x01b21dd213814000; // Time (in 100ns steps) between the start of the UTC and Unix epochs
+ const interval = 122192928000000000.0; // Time (in 100ns steps) between the start of the UTC and Unix epochs
  const nsDNS  = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
  const nsURL  = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
  const nsOID  = '6ba7b812-9dad-11d1-80b4-00c04fd430c8';
@@ -66,11 +66,11 @@ class UUID {
  protected $node;
  protected $time;
  
- public static function mint($ver = 1, $node = NULL, $ns = NULL) {
+ public static function mint($ver = 1, $node = NULL, $ns = NULL, $time = NULL) {
   /* Create a new UUID based on provided data. */
   switch((int) $ver) {
    case 1:
-    return new self(self::mintTime($node));
+    return new self(self::mintTime($node, $ns, $time));
    case 2:
     // Version 2 is not supported 
     throw new UUIDException("Version 2 is unsupported.");
@@ -98,6 +98,11 @@ class UUID {
    return TRUE;
   else
    return FALSE;
+ }
+ 
+ public static function seq() {
+  /* Generate a random clock sequence; this is just two random bytes */
+  return self::ramdonBytes(2);
  }
 
  public function __toString() {
@@ -150,7 +155,7 @@ class UUID {
 
  protected function __construct($uuid) {
   if (strlen($uuid) != 16)
-   throw new UUIDException("Input must be a 128-bit integer.");
+   throw new UUIDException("Input must be a valid UUID.");
   $this->bytes  = $uuid;
   // Optimize the most common use
   $this->string = 
@@ -161,14 +166,21 @@ class UUID {
    bin2hex(substr($uuid,10,6));
  }
 
- protected static function mintTime($node = NULL) {
+ protected static function mintTime($node = NULL, $seq = NULL, $time = NULL) {
   /* Generates a Version 1 UUID.  
      These are derived from the time at which they were generated. */
-  // Get time since Gregorian calendar reform in 100ns intervals
-  // This is exceedingly difficult because of PHP's (and pack()'s) 
-  //  integer size limits.
-  // Note that this will never be more accurate than to the microsecond.
-  $time = microtime(1) * 10000000 + self::interval;
+  // Do a sanity check on clock sequence
+  if ($seq !== NULL && strlen($seq) != 2) {
+   throw UUIDException("Clock sequence most be a two-byte binary string.");
+  }
+  // If no time is specified, get time since Gregorian calendar 
+  // reform in 100ns intervals.  This is exceedingly difficult
+  // because of PHP's (and pack()'s) integer size limits
+  // Note that this will never be more accurate than to the microsecond
+  // Specifying a time for this method should only ever be used for
+  // debugging purposes, lest uniqueness be compromised
+  $time = ($time !== NULL) ? (float) $time : microtime(1);
+  $time = $time * 10000000 + self::interval;
   // Convert to a string representation
   $time = sprintf("%F", $time);
   preg_match("/^\d+/", $time, $time); //strip decimal point
@@ -177,8 +189,10 @@ class UUID {
   $time = pack("H*", str_pad($time, 16, "0", STR_PAD_LEFT));
   // Reorder bytes to their proper locations in the UUID
   $uuid  = $time[4].$time[5].$time[6].$time[7].$time[2].$time[3].$time[0].$time[1];
-  // Generate a random clock sequence
-  $uuid .= self::randomBytes(2);
+  // Generate a random clock sequence if one is not provided
+  // Please consult Sections 4.1.5 and 4.2.1 of RFC 4122 for
+  // guidance regarding when to use a new clock sequence
+  $uuid .= ($seq !== NULL) ? $seq : self::randomBytes(2);
   // set variant
   $uuid[8] = chr(ord($uuid[8]) & self::clearVar | self::varRFC);
   // set version
@@ -216,7 +230,7 @@ class UUID {
   // if the namespace UUID isn't binary, make it so
   $ns = self::makeBin($ns, 16);
   if (!$ns)
-   throw new UUIDException("A binary namespace is required for Version 3 or 5 UUIDs.");
+   throw new UUIDException("A valid UUID namespace is required for Version 3 or 5 UUIDs.");
   switch($ver) {
    case self::MD5: 
     $version = self::version3;
@@ -252,7 +266,7 @@ class UUID {
 
  public static function initRandom() {
   /* Look for a system-provided source of randomness, which is usually crytographically secure.
-     /dev/urandom is tried first simply out of bias for Linux systems. */
+     /dev/urandom is tried first because tests suggest CAPICOM is quite slow to initialize. */
   if (is_readable('/dev/urandom')) {
    self::$randomSource = fopen('/dev/urandom', 'rb');
    self::$randomFunc = 'randomFRead';
