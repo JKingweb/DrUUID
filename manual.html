@@ -168,8 +168,13 @@
      overflow: hidden;
      text-overflow: ellipsis;
      word-break: normal; }
-   table th.small, table td.small {
-     width: 20%; }
+     table colgroup:nth-of-type(1).small ~ * > tr > *:nth-child(1),
+     table colgroup:nth-of-type(2).small ~ * > tr > *:nth-child(2),
+     table colgroup:nth-of-type(3).small ~ * > tr > *:nth-child(3),
+     table colgroup:nth-of-type(4).small ~ * > tr > *:nth-child(4),
+     table colgroup:nth-of-type(5).small ~ * > tr > *:nth-child(5),
+     table colgroup:nth-of-type(6).small ~ * > tr > *:nth-child(6) {
+    width: 20%; }
 
  dl dt, dl dd {
    padding: 0.5em;
@@ -198,7 +203,12 @@
    table {
      table-layout: auto;
      word-break: normal; }
-     table th.small, table td.small {
+     table colgroup:nth-of-type(1).small ~ * > tr > *:nth-child(1),
+     table colgroup:nth-of-type(2).small ~ * > tr > *:nth-child(2),
+     table colgroup:nth-of-type(3).small ~ * > tr > *:nth-child(3),
+     table colgroup:nth-of-type(4).small ~ * > tr > *:nth-child(4),
+     table colgroup:nth-of-type(5).small ~ * > tr > *:nth-child(5),
+     table colgroup:nth-of-type(6).small ~ * > tr > *:nth-child(6) {
        width: auto; } }
  @media screen and (min-width: 64em) {
    body {
@@ -486,68 +496,77 @@
  <p>These groups are documented in this appendix.
  <table id="append-const-random">
   <caption>Randomness source constants</caption>
+  <colgroup>
+  <colgroup>
+  <colgroup class="small">
   <thead>
    <tr>
     <th>Constant
     <th>Description
-    <th class="small">Value
+    <th>Value
   <tbody>
    <tr>
     <td><code>UUID::randChoose</code>
     <td>For auto-detection.  The best available randomness source will be used.
-    <td class="small"><samp>-1</samp>
+    <td><samp>-1</samp>
    <tr>
     <td><code>UUID::randPoor</code>
     <td>PHP's <code>mt_rand()</code> function, the lowest common denominator.
-    <td class="small"><samp>0</samp>
+    <td><samp>0</samp>
    <tr>
     <td><code>UUID::randDev</code>
     <td>The <code>/dev/urandom</code> pseudo-device file, available on most Unix-like systems.
-    <td class="small"><samp>1</samp>
+    <td><samp>1</samp>
    <tr>
     <td><code>UUID::randCAPICOM</code>
     <td>COM calls to <a href="http://msdn.microsoft.com/en-us/library/aa388182(VS.85).aspx">CAPICOM's GetRandom method</a>, available on Windows prior to Windows 7.
-    <td class="small"><samp>2</samp>
+    <td><samp>2</samp>
    <tr>
     <td><code>UUID::randOpenSSL</code>
     <td>The <code>openssl_random_pseudo_bytes()</code> function, available since PHP 5.3.0.
-    <td class="small"><samp>3</samp>
+    <td><samp>3</samp>
    <tr>
     <td><code>UUID::randMcrypt</code>
     <td>The <code>mcrypt_create_iv()</code> function.
-    <td class="small"><samp>4</samp>
+    <td><samp>4</samp>
  </table>
  <table id="append-const-bignum">
   <caption>Bignum method constants</caption>
+  <colgroup>
+  <colgroup>
+  <colgroup class="small">
   <thead>
    <tr>
     <th>Constant
     <th>Description
-    <th class="small">Value
+    <th>Value
   <tbody>
    <tr>
     <td><code>UUID::bigChoose</code>
     <td>For auto-detection.  Native 64-bit will trump GMP, which will trump BC Math
-    <td class="small"><samp>-1</samp>
+    <td><samp>-1</samp>
    <tr>
     <td><code>UUID::bigNot</code>
     <td>No 64-bit integer/bignum support.  This will produce inaccurate results.
-    <td class="small"><samp>0</samp>
+    <td><samp>0</samp>
    <tr>
     <td><code>UUID::bigNative</code>
     <td>Native 64-bit integer support.  This is fastest.
-    <td class="small"><samp>1</samp>
+    <td><samp>1</samp>
    <tr>
     <td><code>UUID::bigGMP</code>
     <td><a href="http://php.net/manual/en/book.gmp.php">GNU Multiple Precision</a> library.
-    <td class="small"><samp>2</samp>
+    <td><samp>2</samp>
    <tr>
     <td><code>UUID::bigBC</code>
     <td><a href="http://php.net/manual/en/book.bc.php">BC Math</a> library.
-    <td class="small"><samp>3</samp>
+    <td><samp>3</samp>
  </table>
  <table id="append-const-namespaces">
   <caption id="append-namespaces">Namespace constants</caption>
+  <colgroup>
+  <colgroup>
+  <colgroup class="small">
   <thead>
    <tr>
     <th>Constant
@@ -578,9 +597,13 @@
  <p>DrUUID will throw either <code>UUIDException</code> or <code>UUIDStorageException</code> exceptions under various circumstances.  Details on these exceptions are below.
  <table>
   <caption>Exception details</caption>
+  <colgroup class="small">
+  <colgroup>
+  <colgroup>
+  <colgroup>
   <thead>
    <tr>
-    <th class="small">Code
+    <th>Code
     <th>Type
     <th>Description
     <th>Public methods [1]
@@ -591,59 +614,59 @@
      <li>As a chained exception.
     </ol>
   <tbody>
-   <tr><td class="small"><samp>0001</samp><td><code>UUIDException</code><td>Selected version is invalid or unsupported.
+   <tr><td><samp>0001</samp><td><code>UUIDException</code><td>Selected version is invalid or unsupported.
     <td>UUID::mint()
-   <tr><td class="small"><samp>0002</samp><td><code>UUIDException</code><td>Version 2 is unsupported.
+   <tr><td><samp>0002</samp><td><code>UUIDException</code><td>Version 2 is unsupported.
     <td>UUID::mint()
-   <tr><td class="small"><samp>0003</samp><td><code>UUIDException</code><td>Input must be a valid UUID.
+   <tr><td><samp>0003</samp><td><code>UUIDException</code><td>Input must be a valid UUID.
     <td>UUID::import()
-   <tr><td class="small"><samp>0101</samp><td><code>UUIDException</code><td>Node must be a valid MAC address.
+   <tr><td><samp>0101</samp><td><code>UUIDException</code><td>Node must be a valid MAC address.
     <td>UUID::mint(1)
-   <tr><td class="small"><samp>0102</samp><td><code>UUIDException</code><td>Clock sequence must be a two-byte binary string.
+   <tr><td><samp>0102</samp><td><code>UUIDException</code><td>Clock sequence must be a two-byte binary string.
     <td>UUID::mint(1)
-   <tr><td class="small"><samp>0103</samp><td><code>UUIDException</code><td>Time input was of an unexpected format.
+   <tr><td><samp>0103</samp><td><code>UUIDException</code><td>Time input was of an unexpected format.
     <td>UUID::mint(1)
-   <tr><td class="small"><samp>0201</samp><td><code>UUIDException</code><td>A name-string is required for Version 3 or 5 UUIDs.
+   <tr><td><samp>0201</samp><td><code>UUIDException</code><td>A name-string is required for Version 3 or 5 UUIDs.
     <td>UUID::mint(3)
      <br>UUID::mint(5)
-   <tr><td class="small"><samp>0202</samp><td><code>UUIDException</code><td>A valid UUID namespace is required for Version 3 or 5 UUIDs.
+   <tr><td><samp>0202</samp><td><code>UUIDException</code><td>A valid UUID namespace is required for Version 3 or 5 UUIDs.
     <td>UUID::mint(3)
      <br>UUID::mint(5)
-   <tr><td class="small"><samp>0801</samp><td><code>UUIDException</code><td>Bignum method is not available.
+   <tr><td><samp>0801</samp><td><code>UUIDException</code><td>Bignum method is not available.
     <td>UUID::initBignum()
-   <tr><td class="small"><samp>0802</samp><td><code>UUIDException</code><td>Randomness strategy is not available.
+   <tr><td><samp>0802</samp><td><code>UUIDException</code><td>Randomness strategy is not available.
     <td>UUID::initRandom()
-   <tr><td class="small"><samp>0901</samp><td><code>UUIDException</code><td>Bignum method not implemented.
+   <tr><td><samp>0901</samp><td><code>UUIDException</code><td>Bignum method not implemented.
     <td>UUID::initBignum()
-   <tr><td class="small"><samp>0902</samp><td><code>UUIDException</code><td>Randomness strategy not implemented.
+   <tr><td><samp>0902</samp><td><code>UUIDException</code><td>Randomness strategy not implemented.
     <td>UUID::initRandom()
-   <tr><td class="small"><samp>1001</samp><td><code>UUIDStorageException</code><td>Storage class does not exist.
+   <tr><td><samp>1001</samp><td><code>UUIDStorageException</code><td>Storage class does not exist.
     <td>UUID::registerStorage()
-   <tr><td class="small"><samp>1002</samp><td><code>UUIDStorageException</code><td>Storage class does not implement the UUIDStorage interface.
+   <tr><td><samp>1002</samp><td><code>UUIDStorageException</code><td>Storage class does not implement the UUIDStorage interface.
     <td>UUID::registerStorage()
-   <tr><td class="small"><samp>1003</samp><td><code>UUIDStorageException</code><td>Storage class could not be instantiated with supplied arguments.
+   <tr><td><samp>1003</samp><td><code>UUIDStorageException</code><td>Storage class could not be instantiated with supplied arguments.
     <td>UUID::initStorage()
      <br>UUID::registerStorage()
      <br>UUID::initAccurate() [2]
-   <tr><td class="small"><samp>1101</samp><td><code>UUIDStorageException</code><td>Stable storage is not readable.
+   <tr><td><samp>1101</samp><td><code>UUIDStorageException</code><td>Stable storage is not readable.
     <td>UUID::initStorage()
      <br>UUID::initAccurate() [2]
-   <tr><td class="small"><samp>1102</samp><td><code>UUIDStorageException</code><td>Stable storage is not writable.
+   <tr><td><samp>1102</samp><td><code>UUIDStorageException</code><td>Stable storage is not writable.
     <td>UUID::initStorage()
      <br>UUID::initAccurate() [2]
-   <tr><td class="small"><samp>1201</samp><td><code>UUIDStorageException</code><td>Stable storage could not be read.
+   <tr><td><samp>1201</samp><td><code>UUIDStorageException</code><td>Stable storage could not be read.
     <td>UUID::mint(1)
-   <tr><td class="small"><samp>1202</samp><td><code>UUIDStorageException</code><td>Stable storage could not be written.
+   <tr><td><samp>1202</samp><td><code>UUIDStorageException</code><td>Stable storage could not be written.
     <td>UUID::mint(1)
-   <tr><td class="small"><samp>1203</samp><td><code>UUIDStorageException</code><td>Stable storage data is invalid or corrupted.
+   <tr><td><samp>1203</samp><td><code>UUIDStorageException</code><td>Stable storage data is invalid or corrupted.
     <td>UUID::mint(1)
-   <tr><td class="small"><samp>2001</samp><td><code>UUIDException</code><td>64-bit integer arithmetic is not available.
+   <tr><td><samp>2001</samp><td><code>UUIDException</code><td>64-bit integer arithmetic is not available.
     <td>UUID::initAccurate()
-   <tr><td class="small"><samp>2002</samp><td><code>UUIDException</code><td>Secure random number generator is not available.
+   <tr><td><samp>2002</samp><td><code>UUIDException</code><td>Secure random number generator is not available.
     <td>UUID::initAccurate()
-   <tr><td class="small"><samp>2003</samp><td><code>UUIDStorageException</code><td>Stable storage not available.
+   <tr><td><samp>2003</samp><td><code>UUIDStorageException</code><td>Stable storage not available.
     <td>UUID::initAccurate()
-   <tr><td class="small"><samp>2004</samp><td><code>UUIDStorageException</code><td>Storage is invalid. 
+   <tr><td><samp>2004</samp><td><code>UUIDStorageException</code><td>Storage is invalid. 
     <td>UUID::initAccurate()
  </table>
 </div>
