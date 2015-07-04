@@ -65,6 +65,7 @@ class UUID {
  const randCAPICOM = 2;
  const randOpenSSL = 3;
  const randMcrypt  = 4;
+ const randNative  = 5;
  //static properties
  protected static $randomFunc   = self::randChoose;
  protected static $randomSource = NULL;
@@ -447,6 +448,10 @@ class UUID {
      $rand .= chr(mt_rand(0, 255));
     } 
     return $rand;
+   case self::randNative:
+    /* Get the specified number of bytes from the PHP core. 
+       This is available since PHP 7. */
+    return random_bytes($bytes);
    case self::randDev:
     /* Get the specified number of random bytes using a file handle 
        previously opened with UUID::initRandom(). */
@@ -492,6 +497,8 @@ class UUID {
   if ($how === NULL) {
    if (self::$randomFunc != self::randChoose)
     return self::$randomFunc;
+   else if (function_exists('random_bytes'))
+    $how = self::randNative;
    else if (function_exists('openssl_random_pseudo_bytes'))
     $how = self::randOpenSSL;
    else if (function_exists('mcrypt_create_iv'))
@@ -514,7 +521,11 @@ class UUID {
     case self::randPoor:
      self::$randomFunc = $how;
      break;
-    case self::randDev:
+    case self::randNative:
+     if (!function_exists('random_bytes'))
+      throw new UUIDException("Randomness source is not available.", 802);
+     break;
+   case self::randDev:
      $source = @fopen('/dev/urandom', 'rb');
      if (!$source) 
       throw new UUIDException("Randomness source is not available.", 802);
