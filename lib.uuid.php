@@ -534,7 +534,7 @@ class UUID {
      if (!function_exists('openssl_random_pseudo_bytes'))
       throw new UUIDException("Randomness source is not available.", 802);
      break;
-    case self::randMcerypt:
+    case self::randMcrypt:
      if (!function_exists('mcrypt_create_iv'))
       throw new UUIDException("Randomness source is not available.", 802);
      break;
