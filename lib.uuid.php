@@ -492,12 +492,12 @@ class UUID {
   if ($how === NULL) {
    if (self::$randomFunc != self::randChoose)
     return self::$randomFunc;
-   else if (is_readable('/dev/urandom')) 
-    $how = self::randDev;
    else if (function_exists('openssl_random_pseudo_bytes'))
     $how = self::randOpenSSL;
    else if (function_exists('mcrypt_create_iv'))
-   	$how = self::randMcrypt;
+    $how = self::randMcrypt;
+   else if (is_readable('/dev/urandom')) 
+    $how = self::randDev;
    else 
     $how = self::randCAPICOM;
    try {
