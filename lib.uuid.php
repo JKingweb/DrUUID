@@ -317,9 +317,13 @@ class UUID {
  protected static function normalizeTime($time, $expected = FALSE) {
   /* Returns a string representation of the 
      number of 100ns steps since the Unix epoch. */
+  if(is_a($time, "DateTimeInterface") || is_a($time, "DateTime")) {
+    return $time->format("U").str_pad($time->format("u"), 7, "0", STR_PAD_RIGHT);
+  }
   switch(gettype($time)) {
    case "string":
     $time = explode(" ", $time);
+    if(sizeof($time != 2)) throw new UUIDException("Time input was of an unexpected format.",103);
     return $time[1].substr(str_pad($time[0], 9, "0", STR_PAD_RIGHT),2,7);
    case "integer": // assume a second-precision timestamp
     return $time."0000000";
@@ -659,13 +663,13 @@ class UUIDStorageVolatile implements UUIDStorage {
   if ($this->sequence === NULL) 
    return;
   if ($timestamp <= $this->timestamp)
-   $this->sequence = pack("n", (unpack("n", $this->sequence) + 1) & self::maxSequence);
+   $this->sequence = pack("n", (unpack("nseq", $this->sequence)['seq'] + 1) & self::maxSequence);
   $this->setTimestamp($timestamp);
   return $this->sequence;
  }
 
  public function setSequence($sequence) {
-  $this->sequence = pack("n", unpack("n", $sequence) & self::maxSequence);
+  $this->sequence = pack("n", unpack("nseq", $sequence)['seq'] & self::maxSequence);
  }
 
  public function setTimestamp($timestamp) {
