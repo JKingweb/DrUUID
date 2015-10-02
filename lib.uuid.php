@@ -614,7 +614,7 @@ class UUID {
      else if (class_exists("Math_BigInteger", 0)) //v1.x
       self::$secLib = "Math_BigInteger";
      else
-      throw new UUIDException("Bignum method not implemented.", 901);
+      throw new UUIDException("Bignum method is not available.", 801);
      break;
     default:
      throw new UUIDException("Bignum method not implemented.", 901);
