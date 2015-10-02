@@ -59,6 +59,7 @@ class UUID {
  const bigNative = 1;
  const bigGMP    = 2;
  const bigBC     = 3;
+ const bigSecLib = 4;
  const randChoose  = -1;
  const randPoor    = 0;
  const randDev     = 1;
@@ -72,6 +73,7 @@ class UUID {
  protected static $bignum       = self::bigChoose;
  protected static $storeClass   = "UUIDStorageStable";
  protected static $store        = NULL;
+ protected static $secLib       = NULL;
  //instance properties
  protected $bytes;
  protected $hex;
@@ -317,13 +319,12 @@ class UUID {
  protected static function normalizeTime($time, $expected = FALSE) {
   /* Returns a string representation of the 
      number of 100ns steps since the Unix epoch. */
-  if(is_a($time, "DateTimeInterface") || is_a($time, "DateTime")) {
-    return $time->format("U").str_pad($time->format("u"), 7, "0", STR_PAD_RIGHT);
-  }
+  if(is_a($time, "DateTimeInterface") || is_a($time, "DateTime"))
+   return $time->format("U").str_pad($time->format("u"), 7, "0", STR_PAD_RIGHT);
   switch(gettype($time)) {
    case "string":
     $time = explode(" ", $time);
-    if(sizeof($time != 2)) throw new UUIDException("Time input was of an unexpected format.",103);
+    if(sizeof($time) != 2) throw new UUIDException("Time input was of an unexpected format.",103);
     return $time[1].substr(str_pad($time[0], 9, "0", STR_PAD_RIGHT),2,7);
    case "integer": // assume a second-precision timestamp
     return $time."0000000";
@@ -367,6 +368,11 @@ class UUID {
      $out = base_convert($mod, 10, 16).$out;
     } while($in > 0);
     break;
+   case self::bigSecLib:
+    $out = new self::$secLib($time);
+    $out = $out->add(new self::$secLib(self::interval));
+    $out = $out->toHex();
+    break;
    default:
     throw new UUIDException("Bignum method not implemented.",901);
   }
@@ -399,6 +405,11 @@ class UUID {
     } while (sizeof($hex));
     // And finally subtract the magic number to get the correct timestamp
     $time = bcsub($time, self::interval);
+    break;
+   case self::bigSecLib:
+    $time = new self::$secLib($hex, 16);
+    $time = $time->subtract(new self::$secLib(self::interval));
+    $time = $time->toString();
     break;
    case self::bigNot:
     $time = sprintf("%F", hexdec($hex) - self::interval);
@@ -561,16 +572,23 @@ class UUID {
   /* Check to see if PHP is running in a 32-bit environment and if so, 
      use GMP or BC Math if available. */
   if ($how === NULL) {
-   if (self::$bignum != self::bigChoose) // determination has already been made
+   if (self::$bignum != self::bigChoose) { // determination has already been made
     return self::$bignum;
-   else if (PHP_INT_SIZE >= 8) 
+   } else if (PHP_INT_SIZE >= 8) {
     self::$bignum = self::bigNative;
-   else if (function_exists("gmp_add")) 
+   } else if (function_exists("gmp_add")) {
     self::$bignum = self::bigGMP;
-   else if (function_exists("bcadd")) 
+   } else if (function_exists("bcadd")) {
     self::$bignum = self::bigBC;
-   else 
+   } else if (class_exists("\phpseclib\Math\BigInteger", 0)) { // phpseclib v2.x
+    self::$bignum = self::bigSecLib;
+    self::$secLib = "\phpseclib\Math\BigInteger";
+   } else if (class_exists("Math_BigInteger", 0)) { // phpseclib v1.x
+    self::$bignum = self::bigSecLib;
+    self::$secLib = "Math_BigInteger";
+   } else {
     self::$bignum = self::bigNot;
+   } 
   } else {
    switch($how) {
     case self::bigChoose:
@@ -589,6 +607,14 @@ class UUID {
     case self::bigBC:
      if (!function_exists("bcadd"))
       throw new UUIDException("Bignum method is not available.", 801);
+     break;
+    case self::bigSecLib:
+     if (class_exists("\phpseclib\Math\BigInteger", 0)) //v2.x
+      self::$secLib = "\phpseclib\Math\BigInteger";
+     else if (class_exists("Math_BigInteger", 0)) //v1.x
+      self::$secLib = "Math_BigInteger";
+     else
+      throw new UUIDException("Bignum method not implemented.", 901);
      break;
     default:
      throw new UUIDException("Bignum method not implemented.", 901);
