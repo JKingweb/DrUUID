@@ -298,7 +298,7 @@
   <li>PHP 5.0.5 is required for basic operation
   <li>PHP 5.2.0 is required for custom storage implementations
   <li>PHP 5.3.0 or later is recommended
-  <li>GMP or BC Math on 32-bit systems is strongly recommended for accuracy
+  <li>GMP, BC Math, or <a href="https://github.com/phpseclib/phpseclib">phpseclib</a>'s BigInteger class on 32-bit systems is strongly recommended for accuracy
  </ul>
  <p>Behaviour may be erratic with PHP versions earlier than 5.1 due to bugs in string casting for objects.
 </div>
@@ -414,7 +414,7 @@
  </div>
  <h3 id="config-initbignum">UUID::initBignum()</h3>
  <div>
-  <p>For Version 1 UUIDs, a 60-bit timestamp must be generated.  On 32-bit systems, this causes PHP to use floating-point arithmetic, which yields inaccurate results, with precision only reliable to the millisecond rather than the microsecond.  If either the GMP or BC Math extension is available, DrUUID can make use of it to produce accurate results:
+  <p>For Version 1 UUIDs, a 60-bit timestamp must be generated.  On 32-bit systems, this causes PHP to use floating-point arithmetic, which yields inaccurate results, with precision only reliable to the millisecond rather than the microsecond.  If either the GMP or BC Math extension is available, or the <a href="https://github.com/phpseclib/phpseclib">phpseclib</a> BigInteger class is loaded, DrUUID can make use of any of these to produce accurate results:
   <p class="samp"><samp><var>int</var> UUID::initBignum( [<var>int means</var>] )</samp>
   <p>If envoked without arguments, the <code>UUID::initBignum()</code> method will try to use the fastest means of producing accurate timestamps.
   <p>An integer constant, <var>means</var>, may be passed to explicitly choose a method.  Passing an unknown value will throw an exception; an exception will also be thrown if an explicitly selected method is not available.
@@ -547,7 +547,7 @@
   <tbody>
    <tr>
     <td><code>UUID::bigChoose</code>
-    <td>For auto-detection.  Native 64-bit will trump GMP, which will trump BC Math
+    <td>For auto-detection.  Native 64-bit will trump GMP, which will trump BC Math, which will trump phpseclib.
     <td><samp>-1</samp>
    <tr>
     <td><code>UUID::bigNot</code>
@@ -559,12 +559,16 @@
     <td><samp>1</samp>
    <tr>
     <td><code>UUID::bigGMP</code>
-    <td><a href="http://php.net/manual/en/book.gmp.php">GNU Multiple Precision</a> library.
+    <td><a href="http://php.net/manual/en/book.gmp.php">GNU Multiple Precision</a> extension.
     <td><samp>2</samp>
    <tr>
     <td><code>UUID::bigBC</code>
-    <td><a href="http://php.net/manual/en/book.bc.php">BC Math</a> library.
+    <td><a href="http://php.net/manual/en/book.bc.php">BC Math</a> extension.
     <td><samp>3</samp>
+   <tr>
+    <td><code>UUID::bigSecLib</code>
+    <td><a href="https://github.com/phpseclib/phpseclib">phpseclib</a>'s BigInteger class, which must already be loaded.  This can produce accurate results in absence of any extensions.
+    <td><samp>4</samp>
  </table>
  <table id="append-const-namespaces">
   <caption id="append-namespaces">Namespace constants</caption>
