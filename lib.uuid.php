@@ -383,6 +383,9 @@ class UUID {
  protected static function decodeTimestamp($hex) {
   /* Convrt a UUID timestamp (in hex notation) to 
      a Unix timestamp with microseconds. */
+  // Check for native 64-bit integer support
+  if (self::$bignum == self::bigChoose)
+   self::$bignum = (PHP_INT_SIZE >= 8) ? self::bigNative : self::bigNot;
   switch(self::$bignum) {
    case self::bigNative:
     $time = hexdec($hex) - self::interval; 
