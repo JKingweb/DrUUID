@@ -295,12 +295,9 @@
 <div id="requirements">
  <h2>Requirements</h2>
  <ul>
-  <li>PHP 5.0.5 is required for basic operation
-  <li>PHP 5.2.0 is required for custom storage implementations
-  <li>PHP 5.3.0 or later is recommended
+  <li>PHP 5.3.0 or later is required
   <li>GMP, BC Math, or <a href="https://github.com/phpseclib/phpseclib">phpseclib</a>'s BigInteger class on 32-bit systems is strongly recommended for accuracy
  </ul>
- <p>Behaviour may be erratic with PHP versions earlier than 5.1 due to bugs in string casting for objects.
 </div>
 <div id="conformance">
  <h2>Conformance exceptions</h2>
@@ -870,10 +867,12 @@ OTHER DEALINGS IN THE SOFTWARE.</pre>
  <dt>????-??-??
   <dd>
    <ul>
+    <li>Now contained in a namespace conforming to <a href="http://www.php-fig.org/psr/psr-4/">PSR-4</a>; consequently PHP 5.3 is now required
     <li>Added native randomness source for PHP 7
     <li>Lowered priority of <code>/dev/urandom</code>, as all available functions use it internally anyway
     <li>Fixed fatal error when re-using clock sequence
     <li>Now allows instances of <code>DateTimeInterface</code> as input to <code>UUID::mint(<var>1</var>)</code>
+    <li>Added support for <a href="https://github.com/phpseclib/phpseclib">phpseclib</a>'s BigInteger class for handling 60-bit timestamps on 32-bit systems
    </ul>
  <dt><a href="http://jkingweb.ca/code/php/lib.uuid/archives?rev=20140906">2014-09-06</a>
   <dd>Major enhancements:
