@@ -1,4 +1,16 @@
 <?php
+/* This file implements a compatibility shim for existing users of DrUUID
+   and acts as a drop-in replacement.  PHP 5.3 is nevertheless required,
+   as is a usable autoloader (one is defined below, if necessary), but the
+   library should act identically to how it did before being namespaced. 
+   
+   In particular:
+   - One can still call UUID::mint() as before
+   - `class_name($uuid)` continues to return "UUID"
+   - `catch(UUIDException $e)` works as expected for either exception type
+   - Storage classes which implemented UUIDStorage continue to work
+*/
+
 if(!@class_exists("JKingWeb\\DrUUID\\UUID")) { // checks for pre-existence of a compatible autoloader 
 	spl_autoload_register(function ($class) {
 		$base = __DIR__.DIRECTORY_SEPARATOR;
