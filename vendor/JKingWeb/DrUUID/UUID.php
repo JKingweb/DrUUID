@@ -551,10 +551,10 @@ class UUID {
 				self::$bignum = self::bigGMP;
 			} else if (function_exists("bcadd")) {
 				self::$bignum = self::bigBC;
-			} else if (class_exists("phpseclib\\Math\\BigInteger", 0)) { // phpseclib v2.x
+			} else if (@class_exists("phpseclib\\Math\\BigInteger")) { // phpseclib v2.x
 				self::$bignum = self::bigSecLib;
 				self::$secLib = "\\phpseclib\\Math\\BigInteger";
-			} else if (class_exists("Math_BigInteger", 0)) { // phpseclib v1.x
+			} else if (@class_exists("Math_BigInteger")) { // phpseclib v1.x
 				self::$bignum = self::bigSecLib;
 				self::$secLib = "\\Math_BigInteger";
 			} else {
