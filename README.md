@@ -4,11 +4,12 @@ An RFC 4122 (UUID) implementation for PHP.
   
 Usage
 -----
-DrUUID's API has been designed to be as absolutely simple to use as possible.  Generating a UUID is as simple as including the library and issuing a single function call:
+DrUUID's API has been designed to be as absolutely simple to use as possible.  Generating a UUID is as simple as including the library and issuing a single method call:
 
 ```php
 <?php
-require_once("lib.uuid.php");
+require_once "autoload.php";
+use JKingWeb\DrUUID\UUID;
 echo UUID::mint();
 ?>
 ```
@@ -19,7 +20,8 @@ DrUUID fully complies with RFC 4122, and therefore supports Version 1 (time-base
 
 ```php
 <?php
-require_once("lib.uuid.php");
+require_once "autoload.php";
+use JKingWeb\DrUUID\UUID;
 echo UUID::mint(1)."\n";
 echo UUID::mint(3, "some identifier", $private_namespace)."\n";
 echo UUID::mint(4)."\n";
