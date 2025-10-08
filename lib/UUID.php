@@ -271,7 +271,7 @@ class UUID {
 		}
 		// Do a sanity check on clock sequence if one is provided
 		if ($seq !== NULL && strlen($seq) != 2)
-			throw UUIDException("Clock sequence must be a two-byte binary string.",102);
+			throw new UUIDException("Clock sequence must be a two-byte binary string.",102);
 		// If one is not provided, check stable/volatile storage for a valid clock sequence
 		if ($seq === NULL)
 			$seq = self::$store->getSequence($time, $node);
@@ -449,7 +449,7 @@ class UUID {
 			case self::randMcrypt:
 				/* Get the specified number of random bytes via Mcrypt. */
 				return mcrypt_create_iv($bytes);
-			case self::randCOM:
+			case self::randCAPICOM:
 				/* Get the specified number of random bytes using Windows'
 				   randomness source via a COM object previously created by UUID::initRandom().
 				   Straight binary mysteriously doesn't work, hence the base64. */
@@ -468,7 +468,7 @@ class UUID {
 			throw new static::$exceptionClass("Secure random number generator is not available.",2002);
 		if (!is_object(self::$store)) {
 			try {
-				call_user_func_array(array("self","initStorage"),func_gets_args());
+				call_user_func_array(array("self","initStorage"),func_get_args());
 			} catch(\Exception $e) {
 				throw new static::$storeExceptionClass("Stable storage not available.", 2003, $e);
 			}
