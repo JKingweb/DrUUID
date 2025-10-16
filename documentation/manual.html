@@ -3,7 +3,7 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width,initial-scale=1.0">
- <title>DrUUID RFC 4122 library manual</title>
+ <title>DrUUID RFC 9562 library manual</title>
  <meta name="author" content="J. King">
  <style type="text/css">
  body {
@@ -219,12 +219,12 @@
  <link rel="up" href="http://jkingweb.ca/code/">
 </head>
 <body>
-<h1>DrUUID RFC 4122 library manual</h1>
+<h1>DrUUID RFC 9562 library manual</h1>
 
 
 <div id="preface"> 
  <h2>Preface</h2>
- <p>"DrUUID" is an implementation for PHP5 of---and associated API for---the data format described in <a href="http://tools.ietf.org/html/rfc4122">RFC 4122</a>, <i>A Universally Unique IDentifier (UUID) URN Namespace</i>.  It is able to mint new UUIDs, import existing UUIDs, extract information from UUIDs, and compare two UUIDs for bit-exact equality.
+ <p>"DrUUID" is an implementation for PHP of---and associated API for---the data format described in <a href="http://tools.ietf.org/html/rfc9562">RFC 9562</a>, <i>Universally Unique IDentifiers (UUIDs)</i>.  It is able to mint new UUIDs, import existing UUIDs, extract information from UUIDs, and compare two UUIDs for bit-exact equality.
  <p>The API is designed to be as simple as possible, with an implementation as accurate as practical given the limits of PHP.  All other concerns, including PHP compatibility, efficiency and extensibility are secondary.
  <p>Questions and comments are very welcome, and should be directed to the author via <a href="http://jkingweb.ca/">his Web site</a>.
  <p><a href="http://jkingweb.ca/code/php/lib.uuid/download">Download current version</a> (<a href="http://jkingweb.ca/code/php/lib.uuid/archives">archives</a>)
@@ -251,6 +251,9 @@
       <li><a href="#api-mint-v3">Version 3</a>
       <li><a href="#api-mint-v4">Version 4</a>
       <li><a href="#api-mint-v5">Version 5</a>
+      <li><a href="#api-mint-v6">Version 6</a>
+      <li><a href="#api-mint-v7">Version 7</a>
+      <li><a href="#api-mint-v8">Version 8</a>
      </ol>
     <li><a href="#api-import">UUID::import()</a>
     <li><a href="#api-compare">UUID::compare()</a>
@@ -285,7 +288,7 @@
 <div id="features">
  <h2>Features</h2>
  <ul>
-  <li>Conforms to <a href="http://tools.ietf.org/html/rfc4122">RFC 4122</a> (with <a href="#conformance">exceptions</a>)
+  <li>Conforms to <a href="http://tools.ietf.org/html/rfc9562">RFC 9562</a> (with <a href="#conformance">exceptions</a>)
   <li>Able to generate new UUIDs, import existing UUIDs, extract data from UUIDs and compare two UUIDs for equality
   <li>Simple API and simple installation
   <li>Optionally draws random numbers from a system-dependent randomness source
@@ -296,18 +299,16 @@
  <h2>Requirements</h2>
  <ul>
   <li>PHP 5.3.0 or later is required
-  <li>GMP, BC Math, or <a href="https://github.com/phpseclib/phpseclib">phpseclib</a>'s BigInteger class on 32-bit systems is strongly recommended for accuracy
  </ul>
 </div>
 <div id="conformance">
  <h2>Conformance exceptions</h2>
  <ul>
-  <li>PHP does not provide the server MAC address for use in Version 1 UUIDs, so a random one is used unless supplied by the user
-  <li>Random numbers are not guaranteed to be generated from a cryptographically secure source
-  <li>Version 1 UUIDs will not be accurate on 32-bit systems unless Bignum facilities are used
-  <li>Stable storage for Version 1 UUIDs is not enabled by default
+  <li>PHP does not provide the server MAC address for use in Version 1 and Version 6 UUIDs, so a random one is used unless supplied by the user
+  <li>Random numbers are not guaranteed to be generated from a cryptographically secure source prior to PHP 7.0
+  <li>Stable storage for Version 1 and Version 6 UUIDs is not enabled by default
  </ul>
- <p>The last three points only apply if DrUUID is used in its default configuration; the first point is not a conformance violation, but is sub-optimal.  See <a href="#config">Section 4</a> for further details on configuring for optimal accuracy.
+ <p>The last two points only apply if DrUUID is used in its default configuration; the first point is not a conformance violation, but is sub-optimal.  See <a href="#config">Section 4</a> for further details on configuring for optimal accuracy.
 </div>
 
 <div id="note">
@@ -318,7 +319,7 @@
   <li>in canonical form, with or without curly braces
   <li>a 16-byte binary string (fastest)
   <li>a 32-character hexadecimal string
-  <li>an RFC 4122 URN
+  <li>an RFC 9562 URN
   <li>a <a href="#the-object"><code>UUID</code> object</a>
  </ul>
  <p>This manual often makes reference to <dfn>invalid UUIDs</dfn>.  For simplicity this is merely any string more or less than 16 bytes long.  DrUUID performs no other validation on UUIDs.
@@ -355,6 +356,17 @@
     <p>The <var>name</var> argument is an arbitrary name and should be in a binary form appropriate for <var>namespace</var>.  It is the responsibility of the user to assure the proper conversion to binary form.  For many namespaces (like the DNS) the appropriate representation is plain text and therefore no conversion is required.
     <p>The <var>namespace</var> argument is itself <a href="#note-uuid">a UUID</a>; invalid UUIDs will throw an exception.
     <p>Version 5 UUIDs are preferred over Version 3 UUIDs.
+   <h4 id="api-mint-v6">Version 6</h4>
+    <p class="samp"><samp><var>UUID</var> UUID::mint( 6 [, <var>string node</var> [, <var>string sequence</var> [, <var>string time</var> ]]] )</samp>
+    <p>Version 6 UUIDs are generated based on the current time and a MAC address (called a <i>node</i>), the same as Version 1 UUIDs. Version 6 UUIDs differ only in that they will sort chronologically.
+    <p>See the description of Version 1 UUIDs above for usage details.
+   <h4 id="api-mint-v7">Version 7</h4>
+    <p class="samp"><samp><var>UUID</var> UUID::mint( 7 [, null, null, <var>string time</var> ] )</samp>
+    <p>Version 7 UUIDs are generated based on the current time using a simpler algorithm than Version 1 or Version 6 UUIDs. Version 7 is the recommended form to use for new software.
+    <p>The <var>time</var> argument may be specified to employ a past or future time (as a Unix timestamp with microseconds like that returned by <code>microtime()</code> for example) instead of the curent time.  This should only be used for debugging and never used to generate UUIDs for any purpose but testing.  Input which cannot be parsed as a timestamp will throw an exception.
+   <h4 id="api-mint-v8">Version 8</h4>
+    <p>Support for Version 8 UUIDs has been stubbed in, but as their contents have no agreed-upon interpretation attempting to create one will throw an exception.
+    <p>A subclass can implement Version 8 UUIDs by overriding the <code>mintCustom()</code> and <code>__get()</code> methods to implement necessary logic.
   </div>
   <h3 id="api-import">UUID::import()</h3>
   <div>
@@ -388,13 +400,13 @@
    <dt>urn
     <dd>The UUID formatted as an URN.
    <dt>version
-    <dd>The UUID's version (eg. 1, 3, 4, 5).
+    <dd>The UUID's version (eg. 1, 3, 4, 5, 6, 7).
    <dt>variant
-    <dd>The UUID's variant.  For RFC 4122 UUIDs this is always <samp>1</samp>.
+    <dd>The UUID's variant.  For RFC 9562 UUIDs this is always <samp>1</samp>.
    <dt>node
-    <dd>The MAC address associated with the UUID.  Only applicable to Version 1 identifiers.
+    <dd>The MAC address associated with the UUID.  Only applicable to Version 1 and Version 6 identifiers.
    <dt>time
-    <dd>The time at which the UUID was generated, as a fixed-point Unix timestamp string with seven-digit sub-second precision.  Only applicable to Version 1 identifiers.
+    <dd>The time at which the UUID was generated, as a fixed-point Unix timestamp string with seven- (Version 1, Version 6) or three-digit (Version 7) sub-second precision.  Only applicable to Version 1, Version 6, and Version 7 identifiers.
   </dl>
  </div> 
 </div>
@@ -411,12 +423,11 @@
  </div>
  <h3 id="config-initbignum">UUID::initBignum()</h3>
  <div>
-  <p>For Version 1 UUIDs, a 60-bit timestamp must be generated.  On 32-bit systems, this causes PHP to use floating-point arithmetic, which yields inaccurate results, with precision only reliable to the millisecond rather than the microsecond.  If either the GMP or BC Math extension is available, or the <a href="https://github.com/phpseclib/phpseclib">phpseclib</a> BigInteger class is loaded, DrUUID can make use of any of these to produce accurate results:
+  <p>For Version 1 and Version 6 UUIDs, a 60-bit timestamp must be generated.  On 32-bit systems this requires workarounds.  If either the GMP or BC Math extension is available, or the <a href="https://github.com/phpseclib/phpseclib">phpseclib</a> BigInteger class is loaded, DrUUID can make use of any of these to produce accurate results more efficiently:
   <p class="samp"><samp><var>int</var> UUID::initBignum( [<var>int means</var>] )</samp>
   <p>If envoked without arguments, the <code>UUID::initBignum()</code> method will try to use the fastest means of producing accurate timestamps.
   <p>An integer constant, <var>means</var>, may be passed to explicitly choose a method.  Passing an unknown value will throw an exception; an exception will also be thrown if an explicitly selected method is not available.
   <p>A list of valid <var>means</var> constants is available <a href="#append-const-bignum">in Appendix A</a>.
-  <p>On 64-bit systems DrUUID will use accurate arithmetic without having to call <code>UUID::initBignum()</code>.
  </div>
  <h3 id="config-initstorage">UUID::initStorage()</h3>
  <div>
@@ -428,13 +439,13 @@
  <h3 id="config-initaccurate">UUID::initAccurate()</h3>
  <div>
   <p class="samp"><samp><var>void</var> UUID::initAccurate( <var>string path</var> )</samp>
-  <p>The <code>UUID::initAccurate()</code> method is a shortcut to achieving optimal accuracy.  It successively calls <code>UUID::initBignum()</code>, <code>UUID::initRandom()</code>, and <code>UUID::initStorage()</code>.  Unlike calling the three methods by themselves, however, <code>UUID::initAccurate()</code> will reject results which will yield inaccurate UUIDs, and will throw an exception accordingly.
+  <p>The <code>UUID::initAccurate()</code> method is a shortcut to achieving optimal accuracy.  It successively calls <code>UUID::initBignum()</code>, <code>UUID::initRandom()</code>, and <code>UUID::initStorage()</code>.
  </div>
 </div>
 
 <div id="storage">
  <h2>Using custom stable storage implementations</h2>
- <p>DrUUID includes a basic implementation of stable storage for Version 1 UUIDs which is consistent with <a href="http://tools.ietf.org/html/rfc4122#section-4.2.1">Section 4.2.1 of RFC 4122</a>.  This implementation, however, is not especially efficient if UUIDs are expected to be created in bulk in a single session, nor can it write to a back-end other than a file.  For more complex requirements, an API is available to allow DrUUID to communicate with alternative storage backends or otherwise tailor the implementation to individual needs.
+ <p>DrUUID includes a basic implementation of stable storage for Version 1 UUIDs which is consistent with <a href="https://www.rfc-editor.org/rfc/rfc9562#name-uuid-generator-states">Section 6.3 of RFC 9562</a>.  This implementation, however, is not especially efficient if UUIDs are expected to be created in bulk in a single session, nor can it write to a back-end other than a file.  For more complex requirements, an API is available to allow DrUUID to communicate with alternative storage backends or otherwise tailor the implementation to individual needs.
  <h3 id="storage-register">UUID::registerStorage()</h3>
  <div>
   <p class="samp"><samp><var>void</var> UUID::registerStorage( <var>string class_name</var> [, <var>mixed arg</var> ... ] )</samp>
@@ -472,7 +483,7 @@
   <p>As DrUUID is unable to retrieve the system's MAC address, it calls the <code>getNode()</code> method, which might implement a means of doing so or retrieve one from storage.  If it does return a value, it should be formatted as six bytes, in big-endian order (the reverse of conventional hexdecimal pair representation).
   <h4 id="storage-interface-getsequence">getSequence()</h4>
   <p>The <code>getSequence()</code> method is the heart of the interface, taking as input the target timestamp (as a number of 100ns ticks since the Unix epoch) and the node ID (as a six-byte string).  Output should be a two-byte string, with the two most significant bits set to zero.
-  <p>Per <a href="http://tools.ietf.org/html/rfc4122#section-4.1.5">Section 4.1.5 of RFC 4122</a>, the clock sequence should be randomized if the node ID changes, and should be incremented if the target timestamp is lower than that in storage.  Due to the limits of 32-bit systems and the difficulties inherent in comparing floating-point numbers, the input timestamp is always a string with integer precision.
+  <p>Per <a href="https://www.rfc-editor.org/rfc/rfc9562#name-uuid-version-1">Section 5.1 of RFC 9562</a>, the clock sequence should be randomized if the node ID changes, and should be incremented if the target timestamp is lower than that in storage.  Due to the limits of 32-bit systems and the difficulties inherent in comparing floating-point numbers, the input timestamp is always a string with integer precision.
   <h4 id="storage-interface-setsequence">setSequence()</h4>
   <p>This method simply alerts the storage of a new clock sequence, if either the user has supplied a sequence or the storage failed to return a result.  Input is a two-byte string; no return value is required.
   <h4 id="storage-interface-settimestamp">setTimestamp()</h4>
@@ -488,7 +499,7 @@
  <ul>
   <li>Randomness source constants, for use with <code>UUID::initRandom()</code>
   <li>Bignum method constants, for use with <code>UUID::initBignum()</code>
-  <li>Namespace constants from <a href="http://tools.ietf.org/html/rfc4122#appendix-C">Appendix C of RFC 4122</a> for use in Version 3 or 5 UUIDs
+  <li>Namespace constants from <a href="https://www.rfc-editor.org/rfc/rfc9562#name-namespace-id-usage-and-allo">Section 6.6 of RFC 9562</a> for use in Version 3 or 5 UUIDs
  </ul>
  <p>These groups are documented in this appendix.
  <table id="append-const-random">
@@ -548,7 +559,7 @@
     <td><samp>-1</samp>
    <tr>
     <td><code>UUID::bigNot</code>
-    <td>No 64-bit integer/bignum support.  This will produce inaccurate results.
+    <td>No 64-bit integer/bignum support. This may be slow, but will still be accurate.
     <td><samp>0</samp>
    <tr>
     <td><code>UUID::bigNative</code>
@@ -564,7 +575,7 @@
     <td><samp>3</samp>
    <tr>
     <td><code>UUID::bigSecLib</code>
-    <td><a href="https://github.com/phpseclib/phpseclib">phpseclib</a>'s BigInteger class, which must already be loaded.  This can produce accurate results in absence of any extensions.
+    <td><a href="https://github.com/phpseclib/phpseclib">phpseclib</a>'s BigInteger class, which must already be loaded.
     <td><samp>4</samp>
  </table>
  <table id="append-const-namespaces">
@@ -864,6 +875,14 @@ OTHER DEALINGS IN THE SOFTWARE.</pre>
 
 <h2 id="append-history">Revision history</h2>
 <dl>
+ <dt><a href="http://jkingweb.ca/code/php/lib.uuid/archives?rev=20251101">2025-11-01</a>
+  <dd>
+   <ul>
+    <li>Added support for Version 6 and Version 7 UUIDs per RFC 9562
+    <li>Stubbed in support for Version 8 UUIDs per RFC 9562
+    <li>Made handling of 60-bit timestamps on 32-bit systems accurate without external dependencies
+    <li>Fixed various minor bugs
+   </ul>
  <dt><a href="http://jkingweb.ca/code/php/lib.uuid/archives?rev=20170209">2017-02-09</a>
   <dd>
    <ul>

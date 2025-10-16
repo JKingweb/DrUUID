@@ -517,8 +517,6 @@ class UUID {
 
 	public static function initAccurate() {
 		$big = static::initBignum();
-		if ($big == self::bigNot)
-			throw new static::$exceptionClass("64-bit integer arithmetic is not available.",2001);
 		$rand = static::initRandom();
 		if ($rand == self::randPoor)
 			throw new static::$exceptionClass("Secure random number generator is not available.",2002);
