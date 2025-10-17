@@ -40,7 +40,8 @@ class UUID {
     //static properties
     protected static $bignum              = self::bigChoose;
     protected static $storeClass          = "\\JKingWeb\\DrUUID\\UUIDStorageStable";
-    protected static $store               = null;
+    /** @var \JKingWeb\DrUUID\UUIDStorage */
+    protected static $store;
     //instance properties
     protected $bytes;
     protected $hex;
@@ -51,11 +52,11 @@ class UUID {
     protected $node;
     protected $time;
     
-    public static function mint(int $ver = 1, ?string $node = null, ?string $ns = null, $time = null): static {
+    public static function mint(int $ver = 1, ?string $node = null, ?string $ns = null): static {
         /* Create a new UUID based on provided data. */
         switch((int) $ver) {
             case 1:
-                return new static(static::mintTime($node, $ns, $time));
+                return new static(static::mintTime());
             case 2:
                 // Version 2 is not supported 
                 throw new UUIDException("Version 2 is unsupported.",2);
@@ -66,9 +67,9 @@ class UUID {
             case 5:
                 return new static(static::mintName(self::SHA1, $node, $ns));
             case 6:
-                return new static(static::mintTime($node, $ns, $time, true));
+                return new static(static::mintTime(true));
             case 7:
-                return new static(static::mintTime7($time));
+                return new static(static::mintTime7());
             case 8:
                 return new static(static::mintCustom($node, $ns));
             default:
@@ -76,11 +77,11 @@ class UUID {
         }
     }
 
-    public static function mintStr(int $ver = 1, ?string $node = null, ?string $ns = null, $time = null): string {
+    public static function mintStr(int $ver = 1, ?string $node = null, ?string $ns = null): string {
         /* Create a new UUID based on provided data and output a string rather than an object. */
         switch((int) $ver) {
             case 1:
-                $uuid = static::mintTime($node, $ns, $time);
+                $uuid = static::mintTime();
                 break;
             case 2:
                 // Version 2 is not supported 
@@ -96,10 +97,10 @@ class UUID {
                 $uuid = static::mintName(self::SHA1, $node, $ns);
                 break;
             case 6:
-                $uuid = static::mintTime($node, $ns, $time, true);
+                $uuid = static::mintTime(true);
                 break;
             case 7:
-                $uuid = static::mintTime7($time);
+                $uuid = static::mintTime7();
                 break;
             case 8:
                 $uuid = static::mintCustom($node, $ns);
@@ -214,7 +215,7 @@ class UUID {
         throw new UUIDException("Selected version is invalid or unsupported.",1);
     }
 
-    protected static function mintTime(?string $node, ?string $seq, $time, bool $ordered = false): string {
+    protected static function mintTime(bool $ordered = false): string {
         /* Generates a Version 1 UUID.  
            These are derived from the time at which they were generated. */
         // Check for native 64-bit integer support
@@ -223,8 +224,15 @@ class UUID {
         // ensure a store is available
         if (static::$store === null) 
             static::$store = new UUIDStorageVolatile;
-        // check any input for correctness and communicate with the store where appropriate
-        list($node, $seq, $time) = static::checkTimeInput($node, $seq, $time);
+        // Get the current time
+        $time = static::normalizeTime(static::now(), 7);
+        // Get the node and sequence from storage
+        $node = static::$store->getNode() ?? static::makeNode();
+        $seq = static::$store->getSequence($time, $node);
+        if ($seq === null) {
+            $seq = static::seq();
+            static::$store->setSequence($seq);
+        }
         // construct a 60-bit timestamp, padded to 64 bits
         $time = static::buildTime($time);
         if ($ordered) {
@@ -246,7 +254,7 @@ class UUID {
         return $uuid;
     }
 
-    protected static function mintTime7($time): string {
+    protected static function mintTime7(): string {
         /* Generates a Version 7 UUID.
            These are also time-based, but use a simple Unix timestamp
            with miliseconds. Since these are 48 bits in length, which
@@ -254,10 +262,7 @@ class UUID {
            floating point numbers, they are easy to handle even on
            32-bit systems.
         */
-        if ($time === null) {
-            $time = microtime();
-        }
-        $time = static::normalizeTime($time, 3);
+        $time = static::normalizeTime(static::now(), 3);
         $time = base_convert($time, 10, 16);
         $time = pack("H*", str_pad($time, 12, "0", \STR_PAD_LEFT));
         // fill the rest of the UUID with random bytes
@@ -307,58 +312,9 @@ class UUID {
         return ($uuid);
     }
 
-    protected static function CheckTimeInput(?string $node, ?string $seq, $time): array {
-        /* If no timestamp has been specified, generate one.
-           Note that this will never be more accurate than to 
-           the microsecond, whereas UUID timestamps are measured in 100ns steps. */
-        $time = ($time !== null) ? static::normalizeTime($time) : static::normalizeTime(microtime());
-        /* If a node ID is supplied, use it and keep it in the store; if none is 
-           supplied, get it from the store or generate it if none is stored. */
-        if ($node === null) {
-            $node = static::$store->getNode();
-            if (!$node) {
-                $node = static::randomBytes(6);
-                $node[0] = pack("C", ord($node[0]) | 1);
-            }
-        } else {
-            $node = static::makeNode($node);
-            if (!$node)
-                throw new UUIDException("Node must be a valid MAC address.", 101);
-        }
-        // Do a sanity check on clock sequence if one is provided
-        if ($seq !== null && strlen($seq) != 2)
-            throw new UUIDException("Clock sequence must be a two-byte binary string.",102);
-        // If one is not provided, check stable/volatile storage for a valid clock sequence
-        if ($seq === null)
-            $seq = static::$store->getSequence($time, $node);
-        // Generate a random clock sequence if one is not available
-        if (!$seq) {
-            $seq = static::seq();
-            static::$store->setSequence($seq);
-        }
-        static::$store->setTimestamp($time);
-        return array($node, $seq, $time);
-    }
-
-    protected static function normalizeTime($time, int $precision = 7): string {
-        /* Returns a string representation of the 
-           time since the Unix epoch, with variable precision. */
-        if(is_a($time, "DateTimeInterface") || is_a($time, "DateTime"))
-            return $time->format("U").substr(str_pad($time->format("u"), $precision, "0", \STR_PAD_RIGHT),0,$precision);
-        switch(gettype($time)) {
-            case "string":
-                $time = explode(" ", $time);
-                if(sizeof($time) != 2) throw new UUIDException("Time input was of an unexpected format.",103);
-                return $time[1].substr(str_pad($time[0], $precision + 2, "0", \STR_PAD_RIGHT),2,$precision);
-            case "integer": // assume a second-precision timestamp
-                return $time.str_repeat("0", $precision);
-            case "double":
-                $time = sprintf("%F", $time);
-                $time = explode(".", $time);
-                return $time[0].substr(str_pad($time[1], $precision, "0", \STR_PAD_RIGHT),0,$precision);
-            default:
-                throw new UUIDException("Time input was of an unexpected format.",103);
-        }
+    protected static function normalizeTime(string $time, int $precision): string {
+        $time = explode(" ", $time);
+        return $time[1].substr(str_pad($time[0], $precision + 2, "0", \STR_PAD_RIGHT),2,$precision);
     }
 
     protected static function buildTime($time): string {
@@ -452,18 +408,14 @@ class UUID {
                 return pack("H*", $str);
     }
 
-    protected static function makeNode(string $str) {
-        /* Parse a string to see if it's a MAC address.
-           If it's six bytes, don't touch it; if it's hex, reverse bytes */
-        $len = 6;
-        if (strlen($str)==$len)
-            return $str;
-        else
-            $str = preg_replace("/[^a-f0-9]/is", "", $str);  // strip non-hex characters
-            if (strlen($str) != ($len * 2))
-                return false;
-            else
-                return pack("H*", $str);
+    protected static function makeNode(): string {
+        $node = static::randomBytes(6);
+        $node[0] = chr(ord($node[0]) | 1);
+        return $node;
+    }
+
+    protected static function now(): string {
+        return microtime();
     }
 
     public static function randomBytes(int $bytes): string {
