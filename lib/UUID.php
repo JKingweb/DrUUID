@@ -217,7 +217,7 @@ class UUID {
            These are derived from the time at which they were generated. */
         // Check for native 64-bit integer support
         if (static::$bignum == self::bigChoose)
-            static::$bignum = (PHP_INT_SIZE >= 8) ? self::bigNative : self::bigNot;
+            static::$bignum = (\PHP_INT_SIZE >= 8) ? self::bigNative : self::bigNot;
         // ensure a store is available
         if (static::$store === null) 
             static::$store = new UUIDStorageVolatile;
@@ -257,7 +257,7 @@ class UUID {
         }
         $time = static::normalizeTime($time, 3);
         $time = base_convert($time, 10, 16);
-        $time = pack("H*", str_pad($time, 12, "0", STR_PAD_LEFT));
+        $time = pack("H*", str_pad($time, 12, "0", \STR_PAD_LEFT));
         // fill the rest of the UUID with random bytes
         $uuid = $time.static::randomBytes(10);
         // set variant and version
@@ -342,18 +342,18 @@ class UUID {
         /* Returns a string representation of the 
            time since the Unix epoch, with variable precision. */
         if(is_a($time, "DateTimeInterface") || is_a($time, "DateTime"))
-            return $time->format("U").substr(str_pad($time->format("u"), $precision, "0", STR_PAD_RIGHT),0,$precision);
+            return $time->format("U").substr(str_pad($time->format("u"), $precision, "0", \STR_PAD_RIGHT),0,$precision);
         switch(gettype($time)) {
             case "string":
                 $time = explode(" ", $time);
                 if(sizeof($time) != 2) throw new UUIDException("Time input was of an unexpected format.",103);
-                return $time[1].substr(str_pad($time[0], $precision + 2, "0", STR_PAD_RIGHT),2,$precision);
+                return $time[1].substr(str_pad($time[0], $precision + 2, "0", \STR_PAD_RIGHT),2,$precision);
             case "integer": // assume a second-precision timestamp
                 return $time.str_repeat("0", $precision);
             case "double":
                 $time = sprintf("%F", $time);
                 $time = explode(".", $time);
-                return $time[0].substr(str_pad($time[1], $precision, "0", STR_PAD_RIGHT),0,$precision);
+                return $time[0].substr(str_pad($time[1], $precision, "0", \STR_PAD_RIGHT),0,$precision);
             default:
                 throw new UUIDException("Time input was of an unexpected format.",103);
         }
@@ -380,7 +380,7 @@ class UUID {
                 /* BC Math does not have a native equivalent of base_convert(), 
                    so we have to fake it.  Chunking the number to as many 
                    nybbles as PHP can handle in an integer speeds things up lots. */
-                $base = (int) hexdec(str_repeat("f", (PHP_INT_SIZE * 2) -1)) + 1;
+                $base = (int) hexdec(str_repeat("f", (\PHP_INT_SIZE * 2) -1)) + 1;
                 do {
                     $mod = (int) bcmod($in,$base);
                     $in = bcdiv($in,$base,0);
@@ -391,7 +391,7 @@ class UUID {
                 throw new UUIDException("Bignum method not implemented.",901);
         }
         // convert to binary, padding to 8 bytes
-        return pack("H*", str_pad($out, 16, "0", STR_PAD_LEFT));
+        return pack("H*", str_pad($out, 16, "0", \STR_PAD_LEFT));
     }  
 
     protected static function decodeTimestamp($hex) {
@@ -399,7 +399,7 @@ class UUID {
            a Unix timestamp with microseconds. */
         // Check for native 64-bit integer support
         if (static::$bignum == self::bigChoose)
-            static::$bignum = (PHP_INT_SIZE >= 8) ? self::bigNative : self::bigNot;
+            static::$bignum = (\PHP_INT_SIZE >= 8) ? self::bigNative : self::bigNot;
         switch(static::$bignum) {
             case self::bigNative:
                 $time = hexdec($hex) - self::interval; 
@@ -412,9 +412,9 @@ class UUID {
                    so we must convert to decimal in safe-sized chunks. */
                 $time = 0;
                 $mul = 1;
-                $size = PHP_INT_SIZE * 2 - 1;
+                $size = \PHP_INT_SIZE * 2 - 1;
                 $max = hexdec(str_repeat("f", $size))+1;
-                $hex = str_split(str_pad($hex, ceil(strlen($hex) / $size) * $size, 0, STR_PAD_LEFT), $size);
+                $hex = str_split(str_pad($hex, ceil(strlen($hex) / $size) * $size, 0, \STR_PAD_LEFT), $size);
                 do {
                     $chunk = hexdec(array_pop($hex));
                     $time = bcadd($time, bcmul($chunk, $mul));
@@ -491,7 +491,7 @@ class UUID {
         if ($how === null) {
             if (static::$bignum != self::bigChoose) { // determination has already been made
                 return static::$bignum;
-            } else if (PHP_INT_SIZE >= 8) {
+            } else if (\PHP_INT_SIZE >= 8) {
                 static::$bignum = self::bigNative;
             } else if (function_exists("gmp_add")) {
                 static::$bignum = self::bigGMP;
@@ -509,7 +509,7 @@ class UUID {
                 case self::bigNot:
                     break;
                 case self::bigNative:
-                    if (PHP_INT_SIZE < 8) 
+                    if (\PHP_INT_SIZE < 8) 
                         throw new UUIDException("Bignum method is not available.", 801);
                     break;
                 case self::bigGMP:
@@ -562,8 +562,8 @@ class UUID {
 
     protected static function bigAdd($a, $b) {
         $s = max(strlen($a), strlen($b));
-        $a = str_pad($a, $s, "0", STR_PAD_LEFT);
-        $b = str_pad($b, $s, "0", STR_PAD_LEFT);
+        $a = str_pad($a, $s, "0", \STR_PAD_LEFT);
+        $b = str_pad($b, $s, "0", \STR_PAD_LEFT);
         $c = 0;
         $n = "";
         for ($i = $s - 9; $i > -9; $i -= 9) {
@@ -582,8 +582,8 @@ class UUID {
     protected static function bigSub($a, $b) {
         $m = 1000000000;
         $s = max(strlen($a), strlen($b));
-        $a = str_pad($a, $s, "0", STR_PAD_LEFT);
-        $b = str_pad($b, $s, "0", STR_PAD_LEFT);
+        $a = str_pad($a, $s, "0", \STR_PAD_LEFT);
+        $b = str_pad($b, $s, "0", \STR_PAD_LEFT);
         $c = 0;
         $n = "";
         for ($i = $s - 9; $i > -9; $i -= 9) {
@@ -597,7 +597,7 @@ class UUID {
             } else {
                 $c = 0;
             }
-            $n = str_pad($nn, 9, "0", STR_PAD_LEFT).$n;
+            $n = str_pad($nn, 9, "0", \STR_PAD_LEFT).$n;
         }
         return ltrim($n, "0");
     }
@@ -620,7 +620,7 @@ class UUID {
                 $q .= $qq;
                 $r = (int) $nn % (int) $d;
             } while ($i < $s);
-            $h = str_pad(dechex($r), 6, "0", STR_PAD_LEFT).$h;
+            $h = str_pad(dechex($r), 6, "0", \STR_PAD_LEFT).$h;
             $n = ltrim($q, "0");
         }
         return ltrim($h, "0");
@@ -644,7 +644,7 @@ class UUID {
                 $q .= dechex($qq);
                 $r = dechex(hexdec($hh) % $d);
             } while ($i < $s);
-            $n = str_pad(hexdec($r), 8, "0", STR_PAD_LEFT).$n;
+            $n = str_pad(hexdec($r), 8, "0", \STR_PAD_LEFT).$n;
             $h = ltrim($q, "0");
         }
         return ltrim($n, "0");
