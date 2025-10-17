@@ -1,6 +1,6 @@
 DrUUID
 ======
-An RFC 4122 (UUID) implementation for PHP.
+An RFC 9562 (UUID) implementation for PHP.
   
 Usage
 -----
@@ -16,7 +16,7 @@ echo UUID::mint();
 
 Compliance
 ----------
-DrUUID fully complies with RFC 4122, and therefore supports Version 1 (time-based), 3 (MD5-based), 4 (random) and 5 (SHA1-based) UUIDs:
+DrUUID fully complies with RFC 9562, and therefore supports Version 1 (time-based), 3 (MD5-based), 4 (random) and 5 (SHA1-based) UUIDs:
 
 ```php
 <?php

@@ -1,7 +1,7 @@
 {
 	"name": "jkingweb/druuid",
 	"type": "library",
-	"description": "DrUUID RFC 4122 library for PHP",
+	"description": "DrUUID RFC 9562 library for PHP",
 	"keywords": ["uuid"],
 	"license": "MIT",
 	"authors": [
