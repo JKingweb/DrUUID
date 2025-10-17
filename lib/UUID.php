@@ -39,7 +39,7 @@ class UUID {
     public const randNative  = 5;
     //static properties
     protected static $bignum              = self::bigChoose;
-    protected static $storeClass          = "\\JKingWeb\\DrUUID\\UUIDStorageStable";
+    protected static $storeClass          = UUIDStorageStable::class;
     /** @var \JKingWeb\DrUUID\UUIDStorage */
     protected static $store;
     //instance properties
@@ -479,7 +479,7 @@ class UUID {
     }
 
     public static function initStorage(?string $file = null): void {
-        if (static::$storeClass == "\\JKingWeb\\DrUUID\\UUIDStorageStable") {
+        if (static::$storeClass == UUIDStorageStable::class) {
             try {static::$store = new UUIDStorageStable($file);}
             catch(\Exception $e) {throw new UUIDStorageException("Storage class could not be instantiated with supplied arguments.", 1003, $e);}
             return;
@@ -496,7 +496,7 @@ class UUID {
         } catch(\Exception $e) {
             throw new UUIDStorageException("Storage class does not exist.", 1001, $e);
         }
-        if (array_search("JKingWeb\\DrUUID\\UUIDStorage", $store->getInterfaceNames()) === false)
+        if (!$store instanceof UUIDStorage)
             throw new UUIDStorageException("Storage class does not implement the UUIDStorage interface.", 1002);
         static::$storeClass = $name;
         if (func_num_args() > 1) {

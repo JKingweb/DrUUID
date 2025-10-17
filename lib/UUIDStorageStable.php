@@ -5,20 +5,19 @@ class UUIDStorageStable extends UUIDStorageVolatile {
     protected $file = null;
     protected $read = false;
     protected $wrote = true;
-    protected static $storeExceptionClass = "\\JKingWeb\\DrUUID\\UUIDStorageException";
 
     public function __construct($path) {
         if (!file_exists($path)) {
             $dir = dirname($path);
             if (!is_writable($dir)) 
-                throw new static::$storeExceptionClass("Stable storage is not writable.", 1102);
+                throw new UUIDStorageException("Stable storage is not writable.", 1102);
             if (!is_readable($dir)) 
-                throw new static::$storeExceptionClass("Stable storage is not readable.", 1101);
+                throw new UUIDStorageException("Stable storage is not readable.", 1101);
         }
         else if (!is_writable($path)) 
-            throw new static::$storeExceptionClass("Stable storage is not writable.", 1102);
+            throw new UUIDStorageException("Stable storage is not writable.", 1102);
         else if (!is_readable($path)) 
-            throw new static::$storeExceptionClass("Stable storage is not readable.", 1101);
+            throw new UUIDStorageException("Stable storage is not readable.", 1101);
         $this->file = $path;
     }
 
@@ -26,14 +25,14 @@ class UUIDStorageStable extends UUIDStorageVolatile {
         if (!file_exists($this->file)) // a missing file is not an error
             return;
         $data = @file_get_contents($this->file);
-        if ($data === false) throw new static::$storeExceptionClass("Stable storage could not be read.", 1201);
+        if ($data === false) throw new UUIDStorageException("Stable storage could not be read.", 1201);
         $this->read = true;
         $this->wrote = false;
         if (!$data) // an empty file is not an error
             return;
         $data = @unserialize($data);
         if (!is_array($data) || sizeof($data) < 3)
-            throw new static::$storeExceptionClass("Stable storage data is invalid or corrupted.", 1203);
+            throw new UUIDStorageException("Stable storage data is invalid or corrupted.", 1203);
         list($this->node, $this->sequence, $this->timestamp) = $data;
     }
     
@@ -61,7 +60,7 @@ class UUIDStorageStable extends UUIDStorageVolatile {
         $data = serialize(array($this->node, $this->sequence, $this->timestamp));
         $write = @file_put_contents($this->file,$data);
         if ($check)    
-            if ($write === false) throw new static::$storeExceptionClass("Stable storage could not be written.", 1202);
+            if ($write === false) throw new UUIDStorageException("Stable storage could not be written.", 1202);
         $this->wrote = true;
         $this->read = false;
     }
