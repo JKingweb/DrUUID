@@ -3,7 +3,7 @@
 use JKingWeb\DrUUID\UUID;
 use JKingWeb\DrUUID\UUIDStorage;
 
-require_once("autoload.php");
+require_once("vendor/autoload.php");
 
 // Test data for V1 and V6 UUIDs
 define("TEST_TS1", new DateTime("2022-02-22T14:22:22-05:00")->format("0.u00 U"));
