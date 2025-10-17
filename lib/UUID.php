@@ -52,9 +52,9 @@ class UUID {
     protected $node;
     protected $time;
     
-    public static function mint(int $ver = 1, ?string $node = null, ?string $ns = null): static {
+    public static function mint(int $ver = 7, ?string $node = null, ?string $ns = null): static {
         /* Create a new UUID based on provided data. */
-        switch((int) $ver) {
+        switch($ver) {
             case 1:
                 return new static(static::mintTime());
             case 2:
@@ -77,9 +77,9 @@ class UUID {
         }
     }
 
-    public static function mintStr(int $ver = 1, ?string $node = null, ?string $ns = null): string {
+    public static function mintStr(int $ver = 7, ?string $node = null, ?string $ns = null): string {
         /* Create a new UUID based on provided data and output a string rather than an object. */
-        switch((int) $ver) {
+        switch($ver) {
             case 1:
                 $uuid = static::mintTime();
                 break;
