@@ -130,7 +130,7 @@ class UUID {
             return false;
     }
     
-    public static function seq(): string {
+    protected static function seq(): string {
         /* Generate a random clock sequence; this is just two random bytes with the two most significant bits set to zero. */
         $seq = static::randomBytes(2);
         $seq[0] = chr(ord($seq[0]) & self::clearVar);
@@ -418,7 +418,7 @@ class UUID {
         return microtime();
     }
 
-    public static function randomBytes(int $bytes): string {
+    protected static function randomBytes(int $bytes): string {
         return random_bytes($bytes);
     } 
 
@@ -433,10 +433,6 @@ class UUID {
         } else if (!(static::$store instanceof UUIDStorage)) {
             throw new UUIDStorageException("Storage is invalid.", 2004);
         }
-    }
-
-    public static function initRandom(?int $how = null): int {
-        return self::randNative;
     }
 
     public static function initBignum(?int $how = null): int {
@@ -603,5 +599,4 @@ class UUID {
         }
         return ltrim($n, "0");
     }
-
 }
