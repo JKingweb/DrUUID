@@ -11,7 +11,7 @@ class UUIDStorageVolatile implements UUIDStorage {
     }
 
     public function getSequence($timestamp, $node): ?string {
-        if ($node != $this->node) {
+        if ($node !== $this->node) {
             $this->node = $node;
             return null;
         }

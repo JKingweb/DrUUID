@@ -124,7 +124,7 @@ class UUID {
         /* Compares the binary representations of two UUIDs.
            The comparison will return true if they are bit-exact,
            or if neither is valid. */
-        if (static::makeBin($a)==static::makeBin($b))
+        if (static::makeBin($a) === static::makeBin($b))
             return true;
         else
             return false;
@@ -164,7 +164,7 @@ class UUID {
                 else
                     return 0;
             case "node":
-                if (ord($this->bytes[6])>>4==1)
+                if (ord($this->bytes[6])>>4 === 1)
                     return bin2hex(strrev(substr($this->bytes,10)));
                 else
                     return null;
@@ -199,7 +199,7 @@ class UUID {
     }
 
     protected function __construct(string $uuid) {
-        if (strlen($uuid) != 16)
+        if (strlen($uuid) !== 16)
             throw new UUIDException("Input must be a valid UUID.",3);
         $this->bytes  = $uuid;
         // Optimize the most common use
@@ -219,7 +219,7 @@ class UUID {
         /* Generates a Version 1 UUID.  
            These are derived from the time at which they were generated. */
         // Check for native 64-bit integer support
-        if (static::$bignum == self::bigChoose)
+        if (static::$bignum === self::bigChoose)
             static::$bignum = (\PHP_INT_SIZE >= 8) ? self::bigNative : self::bigNot;
         // ensure a store is available
         if (static::$store === null) 
@@ -232,6 +232,7 @@ class UUID {
         if ($seq === null) {
             $seq = static::seq();
             static::$store->setSequence($seq);
+            static::$store->setTimestamp($time);
         }
         // construct a 60-bit timestamp, padded to 64 bits
         $time = static::buildTime($time);
@@ -288,7 +289,6 @@ class UUID {
     protected static function mintName(int $ver, ?string $node, ?string $ns): string {
         /* Generates a Version 3 or Version 5 UUID.
                     These are derived from a hash of a name and its namespace, in binary form. */
-        if ($ver == 3)
         if (!$node)
             throw new UUIDException("A name-string is required for Version 3 or 5 UUIDs.",201);
         // if the namespace UUID isn't binary, make it so
@@ -356,7 +356,7 @@ class UUID {
         /* Convrt a UUID timestamp (in hex notation) to 
            a Unix timestamp with microseconds. */
         // Check for native 64-bit integer support
-        if (static::$bignum == self::bigChoose)
+        if (static::$bignum === self::bigChoose)
             static::$bignum = (\PHP_INT_SIZE >= 8) ? self::bigNative : self::bigNot;
         switch(static::$bignum) {
             case self::bigNative:
@@ -397,12 +397,12 @@ class UUID {
         $len = 16;
         if ($str instanceof self)
             return $str->bytes;
-        if (strlen($str)==$len)
+        if (strlen($str) === $len)
             return $str;
         else
             $str = preg_replace("/^urn:uuid:/is", "", $str); // strip URN scheme and namespace
             $str = preg_replace("/[^a-f0-9]/is", "", $str);  // strip non-hex characters
-            if (strlen($str) != ($len * 2))
+            if (strlen($str) !== ($len * 2))
                 return false;
             else
                 return pack("H*", $str);
@@ -439,7 +439,7 @@ class UUID {
         /* Check to see if PHP is running in a 32-bit environment and if so, 
            use GMP or BC Math if available. */
         if ($how === null) {
-            if (static::$bignum != self::bigChoose) { // determination has already been made
+            if (static::$bignum !== self::bigChoose) { // determination has already been made
                 return static::$bignum;
             } else if (\PHP_INT_SIZE >= 8) {
                 static::$bignum = self::bigNative;
