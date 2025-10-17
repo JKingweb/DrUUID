@@ -8,7 +8,7 @@ class UUID {
     protected const clearVar = 63;  // 00111111  Clears all relevant bits of variant byte with AND
     protected const varRes   = 224; // 11100000  Variant reserved for future use
     protected const varMS    = 192; // 11000000  Microsft GUID variant
-    protected const varRFC   = 128; // 10000000  The RFC 4122 variant (this variant)
+    protected const varRFC   = 128; // 10000000  The RFC 9562 variant (this variant)
     protected const varNCS   = 0;   // 00000000  The NCS compatibility variant
     protected const version1 = 16;  // 00010000
     protected const version3 = 48;  // 00110000
