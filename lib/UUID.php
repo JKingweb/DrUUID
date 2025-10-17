@@ -38,7 +38,7 @@ class UUID {
     //static properties
     protected static $bignum              = self::bigChoose;
     protected static $storeClass          = "\\JKingWeb\\DrUUID\\UUIDStorageStable";
-    protected static $store               = NULL;
+    protected static $store               = null;
     //instance properties
     protected $bytes;
     protected $hex;
@@ -49,7 +49,7 @@ class UUID {
     protected $node;
     protected $time;
     
-    public static function mint($ver = 1, $node = NULL, $ns = NULL, $time = NULL) {
+    public static function mint($ver = 1, $node = null, $ns = null, $time = null) {
         /* Create a new UUID based on provided data. */
         switch((int) $ver) {
             case 1:
@@ -74,7 +74,7 @@ class UUID {
         }
     }
 
-    public static function mintStr($ver = 1, $node = NULL, $ns = NULL, $time = NULL) {
+    public static function mintStr($ver = 1, $node = null, $ns = null, $time = null) {
         /* Create a new UUID based on provided data and output a string rather than an object. */
         switch((int) $ver) {
             case 1:
@@ -122,9 +122,9 @@ class UUID {
            The comparison will return true if they are bit-exact,
            or if neither is valid. */
         if (static::makeBin($a)==static::makeBin($b))
-            return TRUE;
+            return true;
         else
-            return FALSE;
+            return false;
     }
     
     public static function seq() {
@@ -164,7 +164,7 @@ class UUID {
                 if (ord($this->bytes[6])>>4==1)
                     return bin2hex(strrev(substr($this->bytes,10)));
                 else
-                    return NULL;
+                    return null;
             case "time":
                 switch (ord($this->bytes[6])>>4) {
                     case 1:
@@ -187,11 +187,11 @@ class UUID {
                         $time = substr($time, 0, strlen($time) - 3).".".substr($time, -3);
                         return $time;
                     default:
-                        return NULL;
+                        return null;
 
                 }
             default:
-                return NULL;
+                return null;
         }
     }
 
@@ -212,14 +212,14 @@ class UUID {
         throw new UUIDException("Selected version is invalid or unsupported.",1);
     }
 
-    protected static function mintTime($node = NULL, $seq = NULL, $time = NULL, $ordered = FALSE) {
+    protected static function mintTime($node = null, $seq = null, $time = null, $ordered = false) {
         /* Generates a Version 1 UUID.  
            These are derived from the time at which they were generated. */
         // Check for native 64-bit integer support
         if (static::$bignum == self::bigChoose)
             static::$bignum = (PHP_INT_SIZE >= 8) ? self::bigNative : self::bigNot;
         // ensure a store is available
-        if (static::$store === NULL) 
+        if (static::$store === null) 
             static::$store = new UUIDStorageVolatile;
         // check any input for correctness and communicate with the store where appropriate
         list($node, $seq, $time) = static::checkTimeInput($node, $seq, $time);
@@ -244,7 +244,7 @@ class UUID {
         return $uuid;
     }
 
-    protected static function mintTime7($time = NULL) {
+    protected static function mintTime7($time = null) {
         /* Generates a Version 7 UUID.
            These are also time-based, but use a simple Unix timestamp
            with miliseconds. Since these are 48 bits in length, which
@@ -309,10 +309,10 @@ class UUID {
         /* If no timestamp has been specified, generate one.
            Note that this will never be more accurate than to 
            the microsecond, whereas UUID timestamps are measured in 100ns steps. */
-        $time = ($time !== NULL) ? static::normalizeTime($time) : static::normalizeTime(microtime(),1);
+        $time = ($time !== null) ? static::normalizeTime($time) : static::normalizeTime(microtime(),1);
         /* If a node ID is supplied, use it and keep it in the store; if none is 
            supplied, get it from the store or generate it if none is stored. */
-        if ($node === NULL) {
+        if ($node === null) {
             $node = static::$store->getNode();
             if (!$node) {
                 $node = static::randomBytes(6);
@@ -324,10 +324,10 @@ class UUID {
                 throw new UUIDException("Node must be a valid MAC address.", 101);
         }
         // Do a sanity check on clock sequence if one is provided
-        if ($seq !== NULL && strlen($seq) != 2)
+        if ($seq !== null && strlen($seq) != 2)
             throw new UUIDException("Clock sequence must be a two-byte binary string.",102);
         // If one is not provided, check stable/volatile storage for a valid clock sequence
-        if ($seq === NULL)
+        if ($seq === null)
             $seq = static::$store->getSequence($time, $node);
         // Generate a random clock sequence if one is not available
         if (!$seq) {
@@ -445,7 +445,7 @@ class UUID {
             $str = preg_replace("/^urn:uuid:/is", "", $str); // strip URN scheme and namespace
             $str = preg_replace("/[^a-f0-9]/is", "", $str);  // strip non-hex characters
             if (strlen($str) != ($len * 2))
-                return FALSE;
+                return false;
             else
                 return pack("H*", $str);
     }
@@ -459,7 +459,7 @@ class UUID {
         else
             $str = preg_replace("/[^a-f0-9]/is", "", $str);  // strip non-hex characters
             if (strlen($str) != ($len * 2))
-                return FALSE;
+                return false;
             else
                 return pack("H*", $str);
     }
@@ -481,14 +481,14 @@ class UUID {
         }
     }
 
-    public static function initRandom($how = NULL) {
+    public static function initRandom($how = null) {
         return self::randNative;
     }
 
-    public static function initBignum($how = NULL) {
+    public static function initBignum($how = null) {
         /* Check to see if PHP is running in a 32-bit environment and if so, 
            use GMP or BC Math if available. */
-        if ($how === NULL) {
+        if ($how === null) {
             if (static::$bignum != self::bigChoose) { // determination has already been made
                 return static::$bignum;
             } else if (PHP_INT_SIZE >= 8) {
@@ -528,7 +528,7 @@ class UUID {
         return static::$bignum;
     }
 
-    public static function initStorage($file = NULL) {
+    public static function initStorage($file = null) {
         if (static::$storeClass == "\\JKingWeb\\DrUUID\\UUIDStorageStable") {
             try {static::$store = new UUIDStorageStable($file);}
             catch(\Exception $e) {throw new UUIDStorageException("Storage class could not be instantiated with supplied arguments.", 1003, $e);}
@@ -546,7 +546,7 @@ class UUID {
         } catch(\Exception $e) {
             throw new UUIDStorageException("Storage class does not exist.", 1001, $e);
         }
-        if (array_search("JKingWeb\\DrUUID\\UUIDStorage", $store->getInterfaceNames()) === FALSE)
+        if (array_search("JKingWeb\\DrUUID\\UUIDStorage", $store->getInterfaceNames()) === false)
             throw new UUIDStorageException("Storage class does not implement the UUIDStorage interface.", 1002);
         static::$storeClass = $name;
         if (func_num_args() > 1) {
