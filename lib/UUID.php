@@ -317,7 +317,7 @@ class UUID {
 		/* If no timestamp has been specified, generate one.
 		   Note that this will never be more accurate than to 
 		   the microsecond, whereas UUID timestamps are measured in 100ns steps. */
-		$time = ($time !== NULL) ? static::normalizeTime($time) : static::normalizeTime(microtime(),1);
+		$time = ($time !== NULL) ? static::normalizeTime($time) : static::normalizeTime(microtime());
 		/* If a node ID is supplied, use it and keep it in the store; if none is 
 		   supplied, get it from the store or generate it if none is stored. */
 		if ($node === NULL) {
