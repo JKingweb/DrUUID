@@ -38,19 +38,19 @@ class TestStorage implements UUIDStorage {
     public function __construct($ook) {
     }
 
-	public function getNode() {
+    public function getNode() {
         return null;
-	}
+    }
 
-	public function getSequence($timestamp, $node) {
+    public function getSequence($timestamp, $node) {
         return null;
-	}
+    }
 
-	public function setSequence($sequence) {
-	}
+    public function setSequence($sequence) {
+    }
 
-	public function setTimestamp($timestamp) {
-	}
+    public function setTimestamp($timestamp) {
+    }
 }
 
 $tests = [
