@@ -331,7 +331,7 @@
   <h3 id="api-mint">UUID::mint()</h3>
   <div>  
    <p class="samp"><samp><var>UUID</var> UUID::mint( [<var>int version</var> [, ... ]] )</samp>
-   <p>The <code>UUID::mint()</code> method generates ("mints", like coinage) a new UUID.  It is capable of producing Version 1 (time-based), Version 3 (MD5 hash-based), Version 4 (random) and Version 5 (SHA-1 hash-based) UUIDs.  Its argument list is generic: required and optional argument depend upon the specified version to produce.
+   <p>The <code>UUID::mint()</code> method generates ("mints", like coinage) a new UUID.  It is capable of producing Version 1 (time-based), Version 3 (MD5 hash-based), Version 4 (random), Version 5 (SHA-1 hash-based), Version 6 (ordered time-based), and Version 7 (Unix time-based) UUIDs.  Its argument list is generic: required and optional argument depend upon the specified version to produce. For backwards-compatibility reasons Version 1 UUIDs are produced unless otherwise specified, but using Version 7 is recommended.
    <h4 id="api-mint-v1">Version 1</h4>
     <p class="samp">
      <samp><var>UUID</var> UUID::mint( <var>void</var> )</samp>
@@ -359,7 +359,7 @@
    <h4 id="api-mint-v6">Version 6</h4>
     <p class="samp"><samp><var>UUID</var> UUID::mint( 6 [, <var>string node</var> [, <var>string sequence</var> [, <var>string time</var> ]]] )</samp>
     <p>Version 6 UUIDs are generated based on the current time and a MAC address (called a <i>node</i>), the same as Version 1 UUIDs. Version 6 UUIDs differ only in that they will sort chronologically.
-    <p>See the description of Version 1 UUIDs above for usage details.
+    <p>See <a href=#api-mint-v1">the description of Version 1 UUIDs</a> above for usage details.
    <h4 id="api-mint-v7">Version 7</h4>
     <p class="samp"><samp><var>UUID</var> UUID::mint( 7 [, null, null, <var>string time</var> ] )</samp>
     <p>Version 7 UUIDs are generated based on the current time using a simpler algorithm than Version 1 or Version 6 UUIDs. Version 7 is the recommended form to use for new software.
@@ -406,7 +406,7 @@
    <dt>node
     <dd>The MAC address associated with the UUID.  Only applicable to Version 1 and Version 6 identifiers.
    <dt>time
-    <dd>The time at which the UUID was generated, as a fixed-point Unix timestamp string with seven- (Version 1, Version 6) or three-digit (Version 7) sub-second precision.  Only applicable to Version 1, Version 6, and Version 7 identifiers.
+    <dd>The time at which the UUID was generated, as a fixed-point Unix timestamp string with seven- (Version 1 and Version 6) or three-digit (Version 7) sub-second precision.  Only applicable to Version 1, Version 6, and Version 7 identifiers.
   </dl>
  </div> 
 </div>
@@ -414,12 +414,13 @@
  <h2 id="config">Runtime configuration</h2>
  <h3 id="config-initrandom"><span id="randomness-initrandom"><span id="randomness">UUID::initRandom()</span></span></h3>
  <div>
-  <p>PHP has a number of good sources for random numbers available to it, but most are either system-dependent, incur considerable overhead, or both.  Consequently DrUUID uses the <code>mt_rand()</code> function to generate random numbers unless instructed to seek an alternative, usually cryptographically secure source.  In order to use an alternative source the <code>UUID::initRandom()</code> static method must be invoked.
+  <p>PHP has a number of good sources for random numbers available to it, but prior to PHP 7.0 most were either system-dependent, incurred considerable overhead, or both.  Consequently DrUUID has historically used the <code>mt_rand()</code> function in PHP 5.x to generate random numbers unless instructed to seek an alternative, usually cryptographically secure source.  In order to use an alternative source the <code>UUID::initRandom()</code> static method must be invoked.
   <p class="samp"><samp><var>int</var> UUID::initRandom( [<var>int source</var>] )</samp>
   <p>If envoked without arguments, the <code>UUID::initRandom()</code> method will attempt to make use of the best available randomness source; this may nevertheless be <code>mt_rand()</code>.
   <p>An integer constant, <var>source</var>, may be passed to explicitly choose a source.  Passing an unknown value will throw an exception; an exception will also be thrown if an explicitly selected source is not available.
   <p>A list of valid <var>source</var> constants is available <a href="#append-const-random">in Appendix A</a>.
   <p>Note that since the characteristics of any given system can be unpredictably different from those of another, users are encouraged to run their own benchmarks to ascertain whether the performance of both <code>UUID::initRandom()</code> and calls thereafter to <code>UUID::randomBytes()</code> warrant an alternative source's use.
+  <p>Note, too, that since PHP 7.0 this functionality is not needed.</p>
  </div>
  <h3 id="config-initbignum">UUID::initBignum()</h3>
  <div>
@@ -431,7 +432,7 @@
  </div>
  <h3 id="config-initstorage">UUID::initStorage()</h3>
  <div>
-  <p>In order to ensure uniqueness of Version 1 UUIDs, the value of the clock sequence, node ID and last timestamp used should be kept in stable storage for reference.  By default DrUUID only keeps these values in memory, but they can also be written to a file:
+  <p>In order to ensure uniqueness of Version 1 and Version 6 UUIDs, the value of the clock sequence, node ID and last timestamp used should be kept in stable storage for reference.  By default DrUUID only keeps these values in memory, but they can also be written to a file:
   <p class="samp"><samp><var>void</var> UUID::initStorage( <var>string path</var> )</samp>
   <p>DrUUID will read state from and write state to the file specified by <var>path</var>.  If the file specified is not accessible, an exception will be thrown.  The default implementation will create a file which does not exist, but will not create folders.
   <p>If access to a file is either impossible or impractical, an API for implementing a custom storage is described in <a href="#storage">Section 5</a>.  If using custom storage, required arguments may be different.
@@ -445,7 +446,7 @@
 
 <div id="storage">
  <h2>Using custom stable storage implementations</h2>
- <p>DrUUID includes a basic implementation of stable storage for Version 1 UUIDs which is consistent with <a href="https://www.rfc-editor.org/rfc/rfc9562#name-uuid-generator-states">Section 6.3 of RFC 9562</a>.  This implementation, however, is not especially efficient if UUIDs are expected to be created in bulk in a single session, nor can it write to a back-end other than a file.  For more complex requirements, an API is available to allow DrUUID to communicate with alternative storage backends or otherwise tailor the implementation to individual needs.
+ <p>DrUUID includes a basic implementation of stable storage for Version 1 and Version 6 UUIDs which is consistent with <a href="https://www.rfc-editor.org/rfc/rfc9562#name-uuid-generator-states">Section 6.3 of RFC 9562</a>.  This implementation, however, is not especially efficient if UUIDs are expected to be created in bulk in a single session, nor can it write to a back-end other than a file.  For more complex requirements, an API is available to allow DrUUID to communicate with alternative storage backends or otherwise tailor the implementation to individual needs.
  <h3 id="storage-register">UUID::registerStorage()</h3>
  <div>
   <p class="samp"><samp><var>void</var> UUID::registerStorage( <var>string class_name</var> [, <var>mixed arg</var> ... ] )</samp>
@@ -461,7 +462,7 @@
  public function setTimestamp(<var>$timestamp, $sequence, $node</var>);
  const maxSequence = 16383; // 00111111 11111111
 }</code></pre>
-  <p>The <code>UUIDStorage</code> interface defines a set of methods which DrUUID will call during the generation of Version 1 UUIDs in a predictable order to query storage and write data.  A visualization of the process is available in <a href="#append-chart">Appendix C</a> for reference. The order of the method calls is as follows:
+  <p>The <code>UUIDStorage</code> interface defines a set of methods which DrUUID will call during the generation of Version 1 and Version 6 UUIDs in a predictable order to query storage and write data.  A visualization of the process is available in <a href="#append-chart">Appendix C</a> for reference. The order of the method calls is as follows:
   <ol>
    <li>If a node ID is already available from the user, skip to Step 4
    <li>Rretrieve the last known node ID (MAC address) by calling <code>getNode()</code>
