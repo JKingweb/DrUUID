@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace JKingWeb\DrUUID;
 
 class UUID {
@@ -49,7 +51,7 @@ class UUID {
     protected $node;
     protected $time;
     
-    public static function mint($ver = 1, $node = null, $ns = null, $time = null) {
+    public static function mint(int $ver = 1, ?string $node = null, ?string $ns = null, $time = null): static {
         /* Create a new UUID based on provided data. */
         switch((int) $ver) {
             case 1:
@@ -74,7 +76,7 @@ class UUID {
         }
     }
 
-    public static function mintStr($ver = 1, $node = null, $ns = null, $time = null) {
+    public static function mintStr(int $ver = 1, ?string $node = null, ?string $ns = null, $time = null): string {
         /* Create a new UUID based on provided data and output a string rather than an object. */
         switch((int) $ver) {
             case 1:
@@ -112,12 +114,12 @@ class UUID {
             bin2hex(substr($uuid,10,6));
     }
 
-    public static function import($uuid) {
+    public static function import($uuid): self {
         /* Import an existing UUID. */
         return ($uuid instanceof self) ? $uuid : new static(static::makeBin($uuid));
     }   
 
-    public static function compare($a, $b) {
+    public static function compare($a, $b): bool {
         /* Compares the binary representations of two UUIDs.
            The comparison will return true if they are bit-exact,
            or if neither is valid. */
@@ -127,7 +129,7 @@ class UUID {
             return false;
     }
     
-    public static function seq() {
+    public static function seq(): string {
         /* Generate a random clock sequence; this is just two random bytes with the two most significant bits set to zero. */
         $seq = static::randomBytes(2);
         $seq[0] = chr(ord($seq[0]) & self::clearVar);
@@ -195,7 +197,7 @@ class UUID {
         }
     }
 
-    protected function __construct($uuid) {
+    protected function __construct(string $uuid) {
         if (strlen($uuid) != 16)
             throw new UUIDException("Input must be a valid UUID.",3);
         $this->bytes  = $uuid;
@@ -208,11 +210,11 @@ class UUID {
             bin2hex(substr($uuid,10,6));
     }
 
-    protected static function mintCustom($dnode, $ns) {
+    protected static function mintCustom(?string $data, ?string $ns): string {
         throw new UUIDException("Selected version is invalid or unsupported.",1);
     }
 
-    protected static function mintTime($node = null, $seq = null, $time = null, $ordered = false) {
+    protected static function mintTime(?string $node, ?string $seq, $time, bool $ordered = false): string {
         /* Generates a Version 1 UUID.  
            These are derived from the time at which they were generated. */
         // Check for native 64-bit integer support
@@ -244,7 +246,7 @@ class UUID {
         return $uuid;
     }
 
-    protected static function mintTime7($time = null) {
+    protected static function mintTime7($time): string {
         /* Generates a Version 7 UUID.
            These are also time-based, but use a simple Unix timestamp
            with miliseconds. Since these are 48 bits in length, which
@@ -266,7 +268,7 @@ class UUID {
         return $uuid;
     }
 
-    protected static function mintRand() {
+    protected static function mintRand(): string {
         /* Generate a Version 4 UUID.  
            These are derived solely from random numbers. */
         // generate random fields
@@ -278,7 +280,7 @@ class UUID {
         return $uuid;
     }
 
-    protected static function mintName($ver, $node, $ns) {
+    protected static function mintName(int $ver, ?string $node, ?string $ns): string {
         /* Generates a Version 3 or Version 5 UUID.
                     These are derived from a hash of a name and its namespace, in binary form. */
         if ($ver == 3)
@@ -291,11 +293,11 @@ class UUID {
         switch($ver) {
             case self::MD5: 
                 $version = self::version3;
-                $uuid = md5($ns.$node,1);
+                $uuid = md5($ns.$node,true);
                 break;
             case self::SHA1:
                 $version = self::version5;
-                $uuid = substr(sha1($ns.$node,1),0, 16);
+                $uuid = substr(sha1($ns.$node,true),0, 16);
                 break;
         }
         // set variant
@@ -305,11 +307,11 @@ class UUID {
         return ($uuid);
     }
 
-    protected static function CheckTimeInput($node, $seq, $time) {
+    protected static function CheckTimeInput(?string $node, ?string $seq, $time): array {
         /* If no timestamp has been specified, generate one.
            Note that this will never be more accurate than to 
            the microsecond, whereas UUID timestamps are measured in 100ns steps. */
-        $time = ($time !== null) ? static::normalizeTime($time) : static::normalizeTime(microtime(),1);
+        $time = ($time !== null) ? static::normalizeTime($time) : static::normalizeTime(microtime());
         /* If a node ID is supplied, use it and keep it in the store; if none is 
            supplied, get it from the store or generate it if none is stored. */
         if ($node === null) {
@@ -338,7 +340,7 @@ class UUID {
         return array($node, $seq, $time);
     }
 
-    protected static function normalizeTime($time, $precision = 7) {
+    protected static function normalizeTime($time, int $precision = 7): string {
         /* Returns a string representation of the 
            time since the Unix epoch, with variable precision. */
         if(is_a($time, "DateTimeInterface") || is_a($time, "DateTime"))
@@ -359,7 +361,7 @@ class UUID {
         }
     }
 
-    protected static function buildTime($time) {
+    protected static function buildTime($time): string {
         switch (static::$bignum) {
             case self::bigNative:
                 $out = dechex($time + self::interval);
@@ -380,9 +382,9 @@ class UUID {
                 /* BC Math does not have a native equivalent of base_convert(), 
                    so we have to fake it.  Chunking the number to as many 
                    nybbles as PHP can handle in an integer speeds things up lots. */
-                $base = (int) hexdec(str_repeat("f", (\PHP_INT_SIZE * 2) -1)) + 1;
+                $base = hexdec(str_repeat("f", (\PHP_INT_SIZE * 2) -1)) + 1;
                 do {
-                    $mod = (int) bcmod($in,$base);
+                    $mod = bcmod($in,$base);
                     $in = bcdiv($in,$base,0);
                     $out = base_convert($mod, 10, 16).$out;
                 } while($in > 0);
@@ -394,7 +396,7 @@ class UUID {
         return pack("H*", str_pad($out, 16, "0", \STR_PAD_LEFT));
     }  
 
-    protected static function decodeTimestamp($hex) {
+    protected static function decodeTimestamp(string $hex): string {
         /* Convrt a UUID timestamp (in hex notation) to 
            a Unix timestamp with microseconds. */
         // Check for native 64-bit integer support
@@ -410,13 +412,13 @@ class UUID {
             case self::bigBC:
                 /* BC Math does not natively handle hexadecimal input, 
                    so we must convert to decimal in safe-sized chunks. */
-                $time = 0;
-                $mul = 1;
+                $time = "0";
+                $mul = "1";
                 $size = \PHP_INT_SIZE * 2 - 1;
                 $max = hexdec(str_repeat("f", $size))+1;
-                $hex = str_split(str_pad($hex, ceil(strlen($hex) / $size) * $size, 0, \STR_PAD_LEFT), $size);
+                $hex = str_split(str_pad($hex, (int) ceil(strlen($hex) / $size) * $size, "0", \STR_PAD_LEFT), $size);
                 do {
-                    $chunk = hexdec(array_pop($hex));
+                    $chunk = (string) hexdec(array_pop($hex));
                     $time = bcadd($time, bcmul($chunk, $mul));
                     $mul = bcmul($max, $mul);
                 } while (sizeof($hex));
@@ -450,7 +452,7 @@ class UUID {
                 return pack("H*", $str);
     }
 
-    protected static function makeNode($str) {
+    protected static function makeNode(string $str) {
         /* Parse a string to see if it's a MAC address.
            If it's six bytes, don't touch it; if it's hex, reverse bytes */
         $len = 6;
@@ -464,11 +466,11 @@ class UUID {
                 return pack("H*", $str);
     }
 
-    public static function randomBytes($bytes) {
+    public static function randomBytes(int $bytes): string {
         return random_bytes($bytes);
     } 
 
-    public static function initAccurate() {
+    public static function initAccurate(): void {
         static::initBignum();
         if (!is_object(static::$store)) {
             try {
@@ -481,11 +483,11 @@ class UUID {
         }
     }
 
-    public static function initRandom($how = null) {
+    public static function initRandom(?int $how = null): int {
         return self::randNative;
     }
 
-    public static function initBignum($how = null) {
+    public static function initBignum(?int $how = null): int {
         /* Check to see if PHP is running in a 32-bit environment and if so, 
            use GMP or BC Math if available. */
         if ($how === null) {
@@ -528,7 +530,7 @@ class UUID {
         return static::$bignum;
     }
 
-    public static function initStorage($file = null) {
+    public static function initStorage(?string $file = null): void {
         if (static::$storeClass == "\\JKingWeb\\DrUUID\\UUIDStorageStable") {
             try {static::$store = new UUIDStorageStable($file);}
             catch(\Exception $e) {throw new UUIDStorageException("Storage class could not be instantiated with supplied arguments.", 1003, $e);}
@@ -540,7 +542,7 @@ class UUID {
         catch(\Exception $e) {throw new UUIDStorageException("Storage class could not be instantiated with supplied arguments.", 1003, $e);}
     }
 
-    public static function registerStorage($name) {
+    public static function registerStorage(string $name): void {
         try {
             $store = new \ReflectionClass($name);
         } catch(\Exception $e) {
@@ -560,7 +562,7 @@ class UUID {
         }
     }
 
-    protected static function bigAdd($a, $b) {
+    protected static function bigAdd(string $a, string $b): string {
         $s = max(strlen($a), strlen($b));
         $a = str_pad($a, $s, "0", \STR_PAD_LEFT);
         $b = str_pad($b, $s, "0", \STR_PAD_LEFT);
@@ -579,7 +581,7 @@ class UUID {
         return $n;
     }
 
-    protected static function bigSub($a, $b) {
+    protected static function bigSub(string $a, string $b): string {
         $m = 1000000000;
         $s = max(strlen($a), strlen($b));
         $a = str_pad($a, $s, "0", \STR_PAD_LEFT);
@@ -601,7 +603,7 @@ class UUID {
         }
         return ltrim($n, "0");
     }
-    protected static function bigHex($n) {
+    protected static function bigHex(string $n): string {
         $h = "";
         $n = (string) $n;
         $d = (string) (2**24);
@@ -626,7 +628,7 @@ class UUID {
         return ltrim($h, "0");
     }
 
-    protected static function bigDec($h) {
+    protected static function bigDec(string $h): string {
         $n = "";
         $d = 100000000;
         while ($h) {
@@ -644,7 +646,7 @@ class UUID {
                 $q .= dechex($qq);
                 $r = dechex(hexdec($hh) % $d);
             } while ($i < $s);
-            $n = str_pad(hexdec($r), 8, "0", \STR_PAD_LEFT).$n;
+            $n = str_pad((string) hexdec($r), 8, "0", \STR_PAD_LEFT).$n;
             $h = ltrim($q, "0");
         }
         return ltrim($n, "0");

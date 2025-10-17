@@ -2,34 +2,32 @@
 namespace JKingWeb\DrUUID;
 
 class UUIDStorageVolatile implements UUIDStorage {
-    protected $node = NULL;
-    protected $timestamp = NULL;
-    protected $sequence = NULL;
+    protected $node = null;
+    protected $timestamp = null;
+    protected $sequence = null;
 
-    public function getNode() {
-        if ($this->node === NULL) 
-            return;
+    public function getNode(): ?string {
         return $this->node;
     }
 
-    public function getSequence($timestamp, $node) {
+    public function getSequence($timestamp, $node): ?string {
         if ($node != $this->node) {
             $this->node = $node;
-            return;
+            return null;
         }
-        if ($this->sequence === NULL) 
-            return;
+        if ($this->sequence === null) 
+            return null;
         if ($timestamp <= $this->timestamp)
             $this->sequence = pack("n", (unpack("nseq", $this->sequence)['seq'] + 1) & self::maxSequence);
         $this->setTimestamp($timestamp);
         return $this->sequence;
     }
 
-    public function setSequence($sequence) {
+    public function setSequence($sequence): void {
         $this->sequence = pack("n", unpack("nseq", $sequence)['seq'] & self::maxSequence);
     }
 
-    public function setTimestamp($timestamp) {
+    public function setTimestamp($timestamp): void {
         $this->timestamp = $timestamp;
     }
 }

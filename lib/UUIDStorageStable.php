@@ -2,9 +2,9 @@
 namespace JKingWeb\DrUUID;
 
 class UUIDStorageStable extends UUIDStorageVolatile {
-    protected $file = NULL;
-    protected $read = FALSE;
-    protected $wrote = TRUE;
+    protected $file = null;
+    protected $read = false;
+    protected $wrote = true;
     protected static $storeExceptionClass = "\\JKingWeb\\DrUUID\\UUIDStorageException";
 
     public function __construct($path) {
@@ -22,13 +22,13 @@ class UUIDStorageStable extends UUIDStorageVolatile {
         $this->file = $path;
     }
 
-    protected function readState() {
+    protected function readState(): void {
         if (!file_exists($this->file)) // a missing file is not an error
             return;
         $data = @file_get_contents($this->file);
-        if ($data === FALSE) throw new static::$storeExceptionClass("Stable storage could not be read.", 1201);
-        $this->read = TRUE;
-        $this->wrote = FALSE;
+        if ($data === false) throw new static::$storeExceptionClass("Stable storage could not be read.", 1201);
+        $this->read = true;
+        $this->wrote = false;
         if (!$data) // an empty file is not an error
             return;
         $data = @unserialize($data);
@@ -37,12 +37,12 @@ class UUIDStorageStable extends UUIDStorageVolatile {
         list($this->node, $this->sequence, $this->timestamp) = $data;
     }
     
-    public function getNode() {
+    public function getNode(): ?string {
         $this->readState();
         return parent::getNode();
     }
 
-    public function setSequence($sequence) {
+    public function setSequence($sequence): void {
         if (!$this->read) {
             $this->readState();
         } 
@@ -50,20 +50,20 @@ class UUIDStorageStable extends UUIDStorageVolatile {
         $this->write();
     }
 
-    public function setTimestamp($timestamp) {
+    public function setTimestamp($timestamp): void {
         parent::setTimestamp($timestamp);
         if ($this->wrote)
             return;
         $this->write();
     }
     
-    protected function write($check = 1) {
+    protected function write($check = 1): void {
         $data = serialize(array($this->node, $this->sequence, $this->timestamp));
         $write = @file_put_contents($this->file,$data);
         if ($check)    
-            if ($write === FALSE) throw new static::$storeExceptionClass("Stable storage could not be written.", 1202);
-        $this->wrote = TRUE;
-        $this->read = FALSE;
+            if ($write === false) throw new static::$storeExceptionClass("Stable storage could not be written.", 1202);
+        $this->wrote = true;
+        $this->read = false;
     }
     
     public function __destruct() {

@@ -19,7 +19,7 @@ define("TEST_TS7", new DateTime("2022-02-22T14:22:22-05:00")->format("0.u00 U"))
 define("TEST_RAND7", hex2bin("0CC318C4DC0C0C07398F"));
 
 class Test extends UUID {
-    public static function randomBytes($bytes) {
+    public static function randomBytes(int $bytes): string {
         if ($bytes == 10) {
             return TEST_RAND7;
         } elseif ($bytes == 16) {
@@ -38,18 +38,18 @@ class TestStorage implements UUIDStorage {
     public function __construct($ook) {
     }
 
-    public function getNode() {
+    public function getNode(): ?string {
         return null;
     }
 
-    public function getSequence($timestamp, $node) {
+    public function getSequence($timestamp, $node): ?string {
         return null;
     }
 
-    public function setSequence($sequence) {
+    public function setSequence($sequence): void {
     }
 
-    public function setTimestamp($timestamp) {
+    public function setTimestamp($timestamp): void {
     }
 }
 
