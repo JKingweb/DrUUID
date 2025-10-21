@@ -3,6 +3,16 @@ declare(strict_types=1);
 
 namespace JKingWeb\DrUUID;
 
+/**
+ * @property-read string $bytes The binary representation of the UUID
+ * @property-read string $hex The bare hexadecimal representation of the UUID. Digits are always lowercase
+ * @property-read string $string The canonical string representation of the UUID, with dashes. Digits are always lowercase
+ * @property-read string $urn The URN representation of the UUID
+ * @property-read int $version The version of the UUID. For RFC 9562 UUIDs this is one of 1, 3, 4, 5, 6, or 7
+ * @property-read int $variant The variant of the UUID. For RFC 9562 UUIDs this is always 1
+ * @property-read string $node The node (a MAC address), available in Version 1 and Version 6 UUIDs
+ * @property-read string $time The time at which the UUID was generated, as a Unix timestamp with subsecond precision. Available in Version 1 and Version 6 UUIDs (with a sub-second precision of seven digits) and Version 7 UUIDs (with a sub-second precision of three digits)
+ */
 class UUID {
     protected const MD5  = 3;
     protected const SHA1 = 5;
@@ -51,50 +61,80 @@ class UUID {
     protected $variant;
     protected $node;
     protected $time;
-    
-    public static function mint(int $ver = 7, ?string $node = null, ?string $ns = null): static {
-        /* Create a new UUID based on provided data. */
+
+    /** Generates a UUID object of the requested type
+     * 
+     * The $ver argument may be any of the following:
+     * 
+     * - 1: Time-based, but does not sort by time. Deprecated in favour of Version 7
+     * - 3: MD5 hash-based. Deprecated in favour of Version 5
+     * - 4: Random except for structural information
+     * - 5: SHA-1 hash-based
+     * - 6: A variant of Version 1 which sorts by time. Deprecated in favour of Version 7
+     * - 7: Time-based, and simpler to produce than the other time-based options
+     * 
+     * The $name and $namespace are both required for Version 3 and 5 UUIDs. See [Section 6.6 of RFC 9562](https://www.rfc-editor.org/rfc/rfc9562#name-namespace-id-usage-and-allo) for requirements and recommendations related to namespace selection
+     * 
+     * @param int $ver The type of UUID to generate
+     * @param ?string $name The name to hash, for Version 3 or 5 UUIDs
+     * @param ?string $namespace The namespace containing the $name, for Version 3 or 5 UUIDs
+     */
+    public static function mint(int $ver = 7, ?string $name = null, ?string $namespace = null): static {
         switch($ver) {
             case 1:
                 return new static(static::mintTime());
             case 2:
-                // Version 2 is not supported 
                 throw new UUIDException("Version 2 is unsupported.",2);
             case 3:
-                return new static(static::mintName(self::MD5, $node, $ns));
+                return new static(static::mintName(self::MD5, $name, $namespace));
             case 4:
                 return new static(static::mintRand());
             case 5:
-                return new static(static::mintName(self::SHA1, $node, $ns));
+                return new static(static::mintName(self::SHA1, $name, $namespace));
             case 6:
                 return new static(static::mintTime(true));
             case 7:
                 return new static(static::mintTime7());
             case 8:
-                return new static(static::mintCustom($node, $ns));
+                return new static(static::mintCustom($name, $namespace));
             default:
                 throw new UUIDException("Selected version is invalid or unsupported.",1);
         }
     }
 
-    public static function mintStr(int $ver = 7, ?string $node = null, ?string $ns = null): string {
-        /* Create a new UUID based on provided data and output a string rather than an object. */
+    /** Generates a UUID of the requested type and returns its canonical string representation
+     * 
+     * The $ver argument may be any of the following:
+     * 
+     * - 1: Time-based, but does not sort by time. Deprecated in favour of Version 7
+     * - 3: MD5 hash-based. Deprecated in favour of Version 5
+     * - 4: Random except for structural information
+     * - 5: SHA-1 hash-based
+     * - 6: A variant of Version 1 which sorts by time. Deprecated in favour of Version 7
+     * - 7: Time-based, and simpler to produce than the other time-based options
+     * 
+     * The $name and $namespace are both required for Version 3 and 5 UUIDs. See [Section 6.6 of RFC 9562](https://www.rfc-editor.org/rfc/rfc9562#name-namespace-id-usage-and-allo) for requirements and recommendations related to namespace selection
+     * 
+     * @param int $ver The type of UUID to generate
+     * @param ?string $name The name to hash, for Version 3 or 5 UUIDs
+     * @param ?string $namespace The namespace containing the $name, for Version 3 or 5 UUIDs
+     */
+    public static function mintStr(int $ver = 7, ?string $name = null, ?string $namespace = null): string {
         switch($ver) {
             case 1:
                 $uuid = static::mintTime();
                 break;
             case 2:
-                // Version 2 is not supported 
                 throw new UUIDException("Version 2 is unsupported.",2);
                 break;
             case 3:
-                $uuid = static::mintName(self::MD5, $node, $ns);
+                $uuid = static::mintName(self::MD5, $name, $namespace);
                 break;
             case 4:
                 $uuid = static::mintRand();
                 break;
             case 5:
-                $uuid = static::mintName(self::SHA1, $node, $ns);
+                $uuid = static::mintName(self::SHA1, $name, $namespace);
                 break;
             case 6:
                 $uuid = static::mintTime(true);
@@ -103,7 +143,7 @@ class UUID {
                 $uuid = static::mintTime7();
                 break;
             case 8:
-                $uuid = static::mintCustom($node, $ns);
+                $uuid = static::mintCustom($name, $namespace);
             default:
                 throw new UUIDException("Selected version is invalid or unsupported.",1);
         }
@@ -115,11 +155,23 @@ class UUID {
             bin2hex(substr($uuid,10,6));
     }
 
-    public static function import($uuid): self {
-        /* Import an existing UUID. */
-        return ($uuid instanceof self) ? $uuid : new static(static::makeBin($uuid));
+    /** Converts a UUID string into a UUID object
+     * 
+     * This can be used to extract data from the UUID, or the easily convert to a different representation.
+     * 
+     * @param string $uuid The UUID to import. This can be in canonical form, as a binary string, or as a string of hexadecimal digits
+     */
+    public static function import(string $uuid): self {
+        return new static(static::makeBin($uuid));
     }   
 
+    /** Compares two UUIDs of arbitrary representation for equality
+     * 
+     * The two UUIDs can be a UUID object, a canonical string, a binary string, or a string of hexadecimal digits
+     * 
+     * @param static|string $a The first UUID to compare
+     * @param static|string $b The second UUID to compare
+     */
     public static function compare($a, $b): bool {
         /* Compares the binary representations of two UUIDs.
            The comparison will return true if they are bit-exact,
@@ -164,10 +216,13 @@ class UUID {
                 else
                     return 0;
             case "node":
-                if (ord($this->bytes[6])>>4 === 1)
-                    return bin2hex(strrev(substr($this->bytes,10)));
-                else
-                    return null;
+                switch (ord($this->bytes[6])>>4) {
+                    case 1:
+                    case 6:
+                        return bin2hex(strrev(substr($this->bytes,10)));
+                    default:
+                        return null;
+                }
             case "time":
                 switch (ord($this->bytes[6])>>4) {
                     case 1:
