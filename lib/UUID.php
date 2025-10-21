@@ -511,6 +511,7 @@ class UUID {
     }
 
     protected static function bigAdd(string $a, string $b): string {
+        $d = 1000000000;
         $s = max(strlen($a), strlen($b));
         $a = str_pad($a, $s, "0", \STR_PAD_LEFT);
         $b = str_pad($b, $s, "0", \STR_PAD_LEFT);
@@ -520,8 +521,8 @@ class UUID {
             $ss = $i < 0 ? $i + 9 : 9;
             $aa = substr($a, max(0, $i), $ss);
             $bb = substr($b, max(0, $i), $ss);
-            $n = (($aa + $bb + $c) % 1000000000).$n;
-            $c = intdiv($aa + $bb + $c, 1000000000);
+            $n = (($aa + $bb + $c) % $d).$n;
+            $c = intdiv($aa + $bb + $c, $d);
         }
         if ($c) {
             $n = $c.$n;
@@ -530,7 +531,6 @@ class UUID {
     }
 
     protected static function bigSub(string $a, string $b): string {
-        $m = 1000000000;
         $s = max(strlen($a), strlen($b));
         $a = str_pad($a, $s, "0", \STR_PAD_LEFT);
         $b = str_pad($b, $s, "0", \STR_PAD_LEFT);
@@ -542,7 +542,7 @@ class UUID {
             $bb = substr($b, max(0, $i), $ss);
             $nn = $aa - $bb - $c;
             if ($nn < 0) {
-                $nn = $m + $nn;
+                $nn = 1000000000 + $nn;
                 $c = 1;
             } else {
                 $c = 0;
@@ -553,7 +553,6 @@ class UUID {
     }
     protected static function bigHex(string $n): string {
         $h = "";
-        $n = (string) $n;
         $d = (string) (2**24);
         while ($n) {
             $s = strlen($n);
