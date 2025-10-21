@@ -63,18 +63,18 @@ class UUID {
     protected $time;
 
     /** Generates a UUID object of the requested type
-     * 
+     *
      * The $ver argument may be any of the following:
-     * 
+     *
      * - 1: Time-based, but does not sort by time. Deprecated in favour of Version 7
      * - 3: MD5 hash-based. Deprecated in favour of Version 5
      * - 4: Random except for structural information
      * - 5: SHA-1 hash-based
      * - 6: A variant of Version 1 which sorts by time. Deprecated in favour of Version 7
      * - 7: Time-based, and simpler to produce than the other time-based options
-     * 
+     *
      * The $name and $namespace are both required for Version 3 and 5 UUIDs. See [Section 6.6 of RFC 9562](https://www.rfc-editor.org/rfc/rfc9562#name-namespace-id-usage-and-allo) for requirements and recommendations related to namespace selection
-     * 
+     *
      * @param int $ver The type of UUID to generate
      * @param ?string $name The name to hash, for Version 3 or 5 UUIDs
      * @param ?string $namespace The namespace containing the $name, for Version 3 or 5 UUIDs
@@ -84,7 +84,7 @@ class UUID {
             case 1:
                 return new static(static::mintTime());
             case 2:
-                throw new UUIDException("Version 2 is unsupported.",2);
+                throw new UUIDException("Version 2 is unsupported.", 2);
             case 3:
                 return new static(static::mintName(self::MD5, $name, $namespace));
             case 4:
@@ -98,23 +98,23 @@ class UUID {
             case 8:
                 return new static(static::mintCustom($name, $namespace));
             default:
-                throw new UUIDException("Selected version is invalid or unsupported.",1);
+                throw new UUIDException("Selected version is invalid or unsupported.", 1);
         }
     }
 
     /** Generates a UUID of the requested type and returns its canonical string representation
-     * 
+     *
      * The $ver argument may be any of the following:
-     * 
+     *
      * - 1: Time-based, but does not sort by time. Deprecated in favour of Version 7
      * - 3: MD5 hash-based. Deprecated in favour of Version 5
      * - 4: Random except for structural information
      * - 5: SHA-1 hash-based
      * - 6: A variant of Version 1 which sorts by time. Deprecated in favour of Version 7
      * - 7: Time-based, and simpler to produce than the other time-based options
-     * 
+     *
      * The $name and $namespace are both required for Version 3 and 5 UUIDs. See [Section 6.6 of RFC 9562](https://www.rfc-editor.org/rfc/rfc9562#name-namespace-id-usage-and-allo) for requirements and recommendations related to namespace selection
-     * 
+     *
      * @param int $ver The type of UUID to generate
      * @param ?string $name The name to hash, for Version 3 or 5 UUIDs
      * @param ?string $namespace The namespace containing the $name, for Version 3 or 5 UUIDs
@@ -125,7 +125,7 @@ class UUID {
                 $uuid = static::mintTime();
                 break;
             case 2:
-                throw new UUIDException("Version 2 is unsupported.",2);
+                throw new UUIDException("Version 2 is unsupported.", 2);
                 break;
             case 3:
                 $uuid = static::mintName(self::MD5, $name, $namespace);
@@ -145,30 +145,30 @@ class UUID {
             case 8:
                 $uuid = static::mintCustom($name, $namespace);
             default:
-                throw new UUIDException("Selected version is invalid or unsupported.",1);
+                throw new UUIDException("Selected version is invalid or unsupported.", 1);
         }
-        return 
-            bin2hex(substr($uuid,0,4))."-".
-            bin2hex(substr($uuid,4,2))."-".
-            bin2hex(substr($uuid,6,2))."-".
-            bin2hex(substr($uuid,8,2))."-".
-            bin2hex(substr($uuid,10,6));
+        return
+            bin2hex(substr($uuid, 0, 4))."-".
+            bin2hex(substr($uuid, 4, 2))."-".
+            bin2hex(substr($uuid, 6, 2))."-".
+            bin2hex(substr($uuid, 8, 2))."-".
+            bin2hex(substr($uuid, 10, 6));
     }
 
     /** Converts a UUID string into a UUID object
-     * 
+     *
      * This can be used to extract data from the UUID, or the easily convert to a different representation.
-     * 
+     *
      * @param string $uuid The UUID to import. This can be in canonical form, as a binary string, or as a string of hexadecimal digits
      */
     public static function import(string $uuid): self {
         return new static(static::makeBin($uuid));
-    }   
+    }
 
     /** Compares two UUIDs of arbitrary representation for equality
-     * 
+     *
      * The two UUIDs can be a UUID object, a canonical string, a binary string, or a string of hexadecimal digits
-     * 
+     *
      * @param static|string $a The first UUID to compare
      * @param static|string $b The second UUID to compare
      */
@@ -181,7 +181,7 @@ class UUID {
         else
             return false;
     }
-    
+
     protected static function seq(): string {
         /* Generate a random clock sequence; this is just two random bytes with the two most significant bits set to zero. */
         $seq = static::randomBytes(2);
@@ -219,7 +219,7 @@ class UUID {
                 switch (ord($this->bytes[6])>>4) {
                     case 1:
                     case 6:
-                        return bin2hex(strrev(substr($this->bytes,10)));
+                        return bin2hex(strrev(substr($this->bytes, 10)));
                     default:
                         return null;
                 }
@@ -255,29 +255,29 @@ class UUID {
 
     protected function __construct(string $uuid) {
         if (strlen($uuid) !== 16)
-            throw new UUIDException("Input must be a valid UUID.",3);
+            throw new UUIDException("Input must be a valid UUID.", 3);
         $this->bytes  = $uuid;
         // Optimize the most common use
-        $this->string = 
-            bin2hex(substr($uuid,0,4))."-".
-            bin2hex(substr($uuid,4,2))."-".
-            bin2hex(substr($uuid,6,2))."-".
-            bin2hex(substr($uuid,8,2))."-".
-            bin2hex(substr($uuid,10,6));
+        $this->string =
+            bin2hex(substr($uuid, 0, 4))."-".
+            bin2hex(substr($uuid, 4, 2))."-".
+            bin2hex(substr($uuid, 6, 2))."-".
+            bin2hex(substr($uuid, 8, 2))."-".
+            bin2hex(substr($uuid, 10, 6));
     }
 
     protected static function mintCustom(?string $data, ?string $ns): string {
-        throw new UUIDException("Selected version is invalid or unsupported.",1);
+        throw new UUIDException("Selected version is invalid or unsupported.", 1);
     }
 
     protected static function mintTime(bool $ordered = false): string {
-        /* Generates a Version 1 UUID.  
+        /* Generates a Version 1 UUID.
            These are derived from the time at which they were generated. */
         // Check for native 64-bit integer support
         if (static::$bignum === self::bigChoose)
             static::$bignum = (\PHP_INT_SIZE >= 8) ? self::bigNative : self::bigNot;
         // ensure a store is available
-        if (static::$store === null) 
+        if (static::$store === null)
             static::$store = new UUIDStorageVolatile;
         // Get the current time
         $time = static::normalizeTime(static::now(), 7);
@@ -330,7 +330,7 @@ class UUID {
     }
 
     protected static function mintRand(): string {
-        /* Generate a Version 4 UUID.  
+        /* Generate a Version 4 UUID.
            These are derived solely from random numbers. */
         // generate random fields
         $uuid = static::randomBytes(16);
@@ -345,19 +345,19 @@ class UUID {
         /* Generates a Version 3 or Version 5 UUID.
                     These are derived from a hash of a name and its namespace, in binary form. */
         if (!$node)
-            throw new UUIDException("A name-string is required for Version 3 or 5 UUIDs.",201);
+            throw new UUIDException("A name-string is required for Version 3 or 5 UUIDs.", 201);
         // if the namespace UUID isn't binary, make it so
         $ns = static::makeBin($ns);
         if (!$ns)
-            throw new UUIDException("A valid UUID namespace is required for Version 3 or 5 UUIDs.",202);
+            throw new UUIDException("A valid UUID namespace is required for Version 3 or 5 UUIDs.", 202);
         switch($ver) {
-            case self::MD5: 
+            case self::MD5:
                 $version = self::version3;
-                $uuid = md5($ns.$node,true);
+                $uuid = md5($ns.$node, true);
                 break;
             case self::SHA1:
                 $version = self::version5;
-                $uuid = substr(sha1($ns.$node,true),0, 16);
+                $uuid = substr(sha1($ns.$node, true), 0, 16);
                 break;
         }
         // set variant
@@ -369,7 +369,7 @@ class UUID {
 
     protected static function normalizeTime(string $time, int $precision): string {
         $time = explode(" ", $time);
-        return $time[1].substr(str_pad($time[0], $precision + 2, "0", \STR_PAD_RIGHT),2,$precision);
+        return $time[1].substr(str_pad($time[0], $precision + 2, "0", \STR_PAD_RIGHT), 2, $precision);
     }
 
     protected static function buildTime($time): string {
@@ -390,38 +390,38 @@ class UUID {
             case self::bigBC:
                 $in = bcadd($time, self::interval, 0);
                 $$out = "";
-                /* BC Math does not have a native equivalent of base_convert(), 
-                   so we have to fake it.  Chunking the number to as many 
+                /* BC Math does not have a native equivalent of base_convert(),
+                   so we have to fake it.  Chunking the number to as many
                    nybbles as PHP can handle in an integer speeds things up lots. */
                 $base = hexdec(str_repeat("f", (\PHP_INT_SIZE * 2) -1)) + 1;
                 do {
-                    $mod = bcmod($in,$base);
-                    $in = bcdiv($in,$base,0);
+                    $mod = bcmod($in, $base);
+                    $in = bcdiv($in, $base, 0);
                     $out = base_convert($mod, 10, 16).$out;
                 } while($in > 0);
                 break;
             default:
-                throw new UUIDException("Bignum method not implemented.",901);
+                throw new UUIDException("Bignum method not implemented.", 901);
         }
         // convert to binary, padding to 8 bytes
         return pack("H*", str_pad($out, 16, "0", \STR_PAD_LEFT));
-    }  
+    }
 
     protected static function decodeTimestamp(string $hex): string {
-        /* Convrt a UUID timestamp (in hex notation) to 
+        /* Convrt a UUID timestamp (in hex notation) to
            a Unix timestamp with microseconds. */
         // Check for native 64-bit integer support
         if (static::$bignum === self::bigChoose)
             static::$bignum = (\PHP_INT_SIZE >= 8) ? self::bigNative : self::bigNot;
         switch(static::$bignum) {
             case self::bigNative:
-                $time = hexdec($hex) - self::interval; 
+                $time = hexdec($hex) - self::interval;
                 break;
             case self::bigGMP:
-                $time = gmp_strval(gmp_sub("0x".$hex, self::interval)); 
+                $time = gmp_strval(gmp_sub("0x".$hex, self::interval));
                 break;
             case self::bigBC:
-                /* BC Math does not natively handle hexadecimal input, 
+                /* BC Math does not natively handle hexadecimal input,
                    so we must convert to decimal in safe-sized chunks. */
                 $time = "0";
                 $mul = "1";
@@ -441,9 +441,9 @@ class UUID {
                 $time = static::bigSub(static::bigDec($hex), self::interval);
                 break;
             default:
-                throw new UUIDException("Bignum method not implemented.",901);
+                throw new UUIDException("Bignum method not implemented.", 901);
         }
-        return substr($time,0,strlen($time)-7).".".substr($time,strlen($time)-7);
+        return substr($time, 0, strlen($time)-7).".".substr($time, strlen($time)-7);
     }
 
     protected static function makeBin($str) {
@@ -475,13 +475,13 @@ class UUID {
 
     protected static function randomBytes(int $bytes): string {
         return random_bytes($bytes);
-    } 
+    }
 
     public static function initAccurate(): void {
         static::initBignum();
         if (!is_object(static::$store)) {
             try {
-                call_user_func_array(array("self","initStorage"),func_get_args());
+                call_user_func_array(array("self", "initStorage"), func_get_args());
             } catch(\Exception $e) {
                 throw new UUIDStorageException("Stable storage not available.", 2003, $e);
             }
@@ -491,7 +491,7 @@ class UUID {
     }
 
     public static function initBignum(?int $how = null): int {
-        /* Check to see if PHP is running in a 32-bit environment and if so, 
+        /* Check to see if PHP is running in a 32-bit environment and if so,
            use GMP or BC Math if available. */
         if ($how === null) {
             if (static::$bignum !== self::bigChoose) { // determination has already been made
@@ -504,7 +504,7 @@ class UUID {
                 static::$bignum = self::bigBC;
             } else {
                 static::$bignum = self::bigNot;
-            } 
+            }
         } else {
             switch($how) {
                 case self::bigChoose:
@@ -514,7 +514,7 @@ class UUID {
                 case self::bigNot:
                     break;
                 case self::bigNative:
-                    if (\PHP_INT_SIZE < 8) 
+                    if (\PHP_INT_SIZE < 8)
                         throw new UUIDException("Bignum method is not available.", 801);
                     break;
                 case self::bigGMP:
@@ -541,7 +541,7 @@ class UUID {
         }
         $store = new \ReflectionClass(static::$storeClass);
         $args = func_get_args();
-        try {static::$store = $store->newInstanceArgs($args);} 
+        try {static::$store = $store->newInstanceArgs($args);}
         catch(\Exception $e) {throw new UUIDStorageException("Storage class could not be instantiated with supplied arguments.", 1003, $e);}
     }
 
@@ -551,7 +551,7 @@ class UUID {
         } catch(\Exception $e) {
             throw new UUIDStorageException("Storage class does not exist.", 1001, $e);
         }
-        if (!$store instanceof UUIDStorage)
+        if (!($store instanceof UUIDStorage))
             throw new UUIDStorageException("Storage class does not implement the UUIDStorage interface.", 1002);
         static::$storeClass = $name;
         if (func_num_args() > 1) {

@@ -71,8 +71,8 @@ foreach ($tests as $v => [$exp, $params]) {
     $exp = strtolower($exp);
     $act = Test::mintStr(...$params);
     if ($act === $exp) {
-        echo "V$v: PASS  $act\n";    
+        echo "V$v: PASS  $act\n";
     } else {
-        echo "V$v: FAIL  $act\n          $exp\n";    
+        echo "V$v: FAIL  $act\n          $exp\n";
     }
 }

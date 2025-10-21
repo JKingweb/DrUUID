@@ -1,7 +1,7 @@
 DrUUID
 ======
 An RFC 9562 (UUID) implementation for PHP.
-  
+
 Usage
 -----
 DrUUID's API has been designed to be as absolutely simple to use as possible.  Generating a UUID is as simple as including the library and issuing a single method call:

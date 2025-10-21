@@ -195,7 +195,7 @@
 
  svg {
    margin-bottom: 1em; }
- 
+
  h2 + svg {
    margin-top: -1em; }
 
@@ -222,7 +222,7 @@
 <h1>DrUUID RFC 9562 library manual</h1>
 
 
-<div id="preface"> 
+<div id="preface">
  <h2>Preface</h2>
  <p>"DrUUID" is an implementation for PHP of---and associated API for---the data format described in <a href="http://tools.ietf.org/html/rfc9562">RFC 9562</a>, <i>Universally Unique IDentifiers (UUIDs)</i>.  It is able to mint new UUIDs, import existing UUIDs, extract information from UUIDs, and compare two UUIDs for bit-exact equality.
  <p>The API is designed to be as simple as possible, with an implementation as accurate as practical given the limits of PHP.  All other concerns, including PHP compatibility, efficiency and extensibility are secondary.
@@ -274,7 +274,7 @@
    <ol>
     <li><a href="#storage-register">UUID::registerStorage()</a>
     <li><a href="#storage-interface">The UUIDStorage interface</a>
-   </ol> 
+   </ol>
  </ol>
  <h3>Appendices</h3>
  <ol>
@@ -314,7 +314,7 @@
 <div id="note">
  <h2>Documentation note</h2>
  <p>This manual often makes references to <dfn>binary and hexdecimal strings</dfn> for input and output.  For the sake of simplicity please assume that such strings are always in network order (big-endian).
- <p id="note-uuid">For methods accepting <dfn>a UUID</dfn> as an argument, the UUID may be: 
+ <p id="note-uuid">For methods accepting <dfn>a UUID</dfn> as an argument, the UUID may be:
  <ul>
   <li>in canonical form, with or without curly braces
   <li>a 16-byte binary string (fastest)
@@ -329,7 +329,7 @@
  <h2>The API</h2>
   <p>The core DrUUID API consists of four static methods: <code>UUID::mint()</code>, <code>UUID::import()</code>, <code>UUID::compare()</code> as well as <code>UUID::mintStr()</code>.  Of these <code>UUID::mint()</code> and <code>UUID::import()</code> return an instance of the <code>UUID</code> class.
   <h3 id="api-mint">UUID::mint()</h3>
-  <div>  
+  <div>
    <p class="samp"><samp><var>UUID</var> UUID::mint( [<var>int version</var> [, ... ]] )</samp>
    <p>The <code>UUID::mint()</code> method generates ("mints", like coinage) a new UUID.  It is capable of producing Version 1 (time-based), Version 3 (MD5 hash-based), Version 4 (random), Version 5 (SHA-1 hash-based), Version 6 (ordered time-based), and Version 7 (Unix time-based) UUIDs.  Its argument list is generic: required and optional argument depend upon the specified version to produce. For backwards-compatibility reasons Version 1 UUIDs are produced unless otherwise specified, but using Version 7 is recommended.
    <h4 id="api-mint-v1">Version 1</h4>
@@ -337,7 +337,7 @@
      <samp><var>UUID</var> UUID::mint( <var>void</var> )</samp>
     <br>
      <samp><var>UUID</var> UUID::mint( 1 [, <var>string node</var> [, <var>string sequence</var> [, <var>string time</var> ]]] )</samp>
-    <p>Version 1 UUIDs (the default type) are generated based on the current time and a MAC address (called a <i>node</i>).  
+    <p>Version 1 UUIDs (the default type) are generated based on the current time and a MAC address (called a <i>node</i>).
     <p>If specified, <var>node</var> should be either a 6-byte binary string or a 12-character hexadecimal string (with or without separators) representing a MAC address.  DrUUID does not attempt to detect the host's MAC address.  Invalid nodes will throw an exception.
     <p>The <var>sequence</var> argument specifies a clock sequence and should be a two-byte binary string.  This should only be used for debugging.  Invalid sequences will throw an exception.
     <p>Finally, the <var>time</var> argument may be specified to employ a past or future time (as a Unix timestamp with microseconds like that returned by <code>microtime()</code> for example) instead of the curent time.  This should only be used for debugging and never used to generate UUIDs for any purpose but testing.  Input which cannot be parsed as a timestamp will throw an exception.
@@ -371,7 +371,7 @@
   <h3 id="api-import">UUID::import()</h3>
   <div>
    <p class="samp"><samp><var>UUID</var> UUID::import( <var>string uuid</var> )</samp>
-   <p>The <code>UUID::import()</code> method imports <a href="#note-uuid">a UUID</a> string as a <code>UUID</code> object.  Invalid UUIDs will throw an exception.  
+   <p>The <code>UUID::import()</code> method imports <a href="#note-uuid">a UUID</a> string as a <code>UUID</code> object.  Invalid UUIDs will throw an exception.
   </div>
   <h3 id="api-compare">UUID::compare()</h3>
   <div>
@@ -408,7 +408,7 @@
    <dt>time
     <dd>The time at which the UUID was generated, as a fixed-point Unix timestamp string with seven- (Version 1 and Version 6) or three-digit (Version 7) sub-second precision.  Only applicable to Version 1, Version 6, and Version 7 identifiers.
   </dl>
- </div> 
+ </div>
 </div>
 <div>
  <h2 id="config">Runtime configuration</h2>
@@ -467,8 +467,8 @@
    <li>If a node ID is already available from the user, skip to Step 4
    <li>Rretrieve the last known node ID (MAC address) by calling <code>getNode()</code>
     <ul>
-     <li>The storage may attempt to retrieve the actual MAC address; otherwise it returns the stored one, or <var>NULL</var> 
-    </ul> 
+     <li>The storage may attempt to retrieve the actual MAC address; otherwise it returns the stored one, or <var>NULL</var>
+    </ul>
    <li>If the node ID is <var>NULL</var> because an existing value is not available, generate a new random node ID
    <li>If the user has supplied a clock sequence for debugging, call <code>setSequence()</code> and skip to Step 7
    <li>Retrieve the clock sequence by calling <code>getSequence()</code>, passing the timestamp and node ID
@@ -683,7 +683,7 @@
     <td>UUID::initAccurate()
    <tr><td><samp>2003</samp><td><code>UUIDStorageException</code><td>Stable storage not available.
     <td>UUID::initAccurate()
-   <tr><td><samp>2004</samp><td><code>UUIDStorageException</code><td>Storage is invalid. 
+   <tr><td><samp>2004</samp><td><code>UUIDStorageException</code><td>Storage is invalid.
     <td>UUID::initAccurate()
  </table>
 </div>
@@ -694,9 +694,9 @@
 <!--
 begin=>start: Begin
 end=>end: Done
-haveNode=>condition: Have 
+haveNode=>condition: Have
 Node
-userSeq=>condition: User 
+userSeq=>condition: User
 Seq
 isNullNode=>condition: Null
 isNullSeq=>condition: Null
@@ -722,8 +722,8 @@ setSeq->setTime->end
 -->
   <style>
   text {
-   text-anchor: start;  
-   font-size: 16px; 
+   text-anchor: start;
+   font-size: 16px;
    font-family: 'Helvetica Neue', Helvetica, Arial;
    fill: black;
   }
@@ -932,13 +932,13 @@ OTHER DEALINGS IN THE SOFTWARE.</pre>
     <li>MAC addresses are now correctly converted to and from canonical form
     <li>Passing a UUID object to <code>UUID::import()</code> is now a no-op
     <li>Raised required PHP version
-     <ul> 
+     <ul>
       <li>PHP 5.0.5 is now required
       <li>PHP 5.2.0 is required for custom storage
       <li>PHP 5.3.0 is recommended, for chained exceptions
      </ul>
     <li>Major expansion of manual to document new and changed features
-   </ul> 
+   </ul>
  <dt><a href="http://jkingweb.ca/code/php/lib.uuid/archives?rev=20110320">2011-03-20</a>
   <dd>Refined the generation of Version 1 UUIDs.  This sees the addition of the <var>sequence</var> and <var>time</var> parameters to <code>UUID::mint(<var>1</var>)</code>, as well as the addition of <code>UUID::seq()</code>.
  <dt><a href="http://jkingweb.ca/code/php/lib.uuid/archives?rev=20100215">2010-02-15</a>
@@ -952,7 +952,7 @@ OTHER DEALINGS IN THE SOFTWARE.</pre>
     <li>Implemented system-level randomness source for Windows.
     <li>Fixed a minor unnecessary processing branch when attempting to retrieve node value from non-version 1 UUIDs.
     <li>Various documentation corrections and clarifications; numerous fixed typos.
-   </ul>       
+   </ul>
  <dt><a href="http://jkingweb.ca/code/php/lib.uuid/archives?rev=20090928">2009-09-28</a>
   <dd>Fixed a minor bug preventing <code>/dev/urandom</code> from being used.  Reported by Rubén Marrero.
  <dt><a href="http://jkingweb.ca/code/php/lib.uuid/archives?rev=20090413">2009-04-13</a>

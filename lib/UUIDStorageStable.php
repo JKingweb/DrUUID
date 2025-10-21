@@ -9,14 +9,14 @@ class UUIDStorageStable extends UUIDStorageVolatile {
     public function __construct($path) {
         if (!file_exists($path)) {
             $dir = dirname($path);
-            if (!is_writable($dir)) 
+            if (!is_writable($dir))
                 throw new UUIDStorageException("Stable storage is not writable.", 1102);
-            if (!is_readable($dir)) 
+            if (!is_readable($dir))
                 throw new UUIDStorageException("Stable storage is not readable.", 1101);
         }
-        else if (!is_writable($path)) 
+        else if (!is_writable($path))
             throw new UUIDStorageException("Stable storage is not writable.", 1102);
-        else if (!is_readable($path)) 
+        else if (!is_readable($path))
             throw new UUIDStorageException("Stable storage is not readable.", 1101);
         $this->file = $path;
     }
@@ -35,7 +35,7 @@ class UUIDStorageStable extends UUIDStorageVolatile {
             throw new UUIDStorageException("Stable storage data is invalid or corrupted.", 1203);
         list($this->node, $this->sequence, $this->timestamp) = $data;
     }
-    
+
     public function getNode(): ?string {
         $this->readState();
         return parent::getNode();
@@ -44,7 +44,7 @@ class UUIDStorageStable extends UUIDStorageVolatile {
     public function setSequence($sequence): void {
         if (!$this->read) {
             $this->readState();
-        } 
+        }
         parent::setSequence($sequence);
         $this->write();
     }
@@ -55,16 +55,16 @@ class UUIDStorageStable extends UUIDStorageVolatile {
             return;
         $this->write();
     }
-    
+
     protected function write($check = 1): void {
         $data = serialize(array($this->node, $this->sequence, $this->timestamp));
-        $write = @file_put_contents($this->file,$data);
-        if ($check)    
+        $write = @file_put_contents($this->file, $data);
+        if ($check)
             if ($write === false) throw new UUIDStorageException("Stable storage could not be written.", 1202);
         $this->wrote = true;
         $this->read = false;
     }
-    
+
     public function __destruct() {
         $this->write(0);
     }
