@@ -29,30 +29,19 @@ class UUID {
     protected const version6 = 96;  // 01100000
     protected const version7 = 112; // 01110000
     protected const version8 = 128; // 10000000
+    protected const bigChoose = -1;
+    protected const bigNot    = 0;
+    protected const bigNative = 1;
+    protected const bigGMP    = 2;
+    protected const bigBC     = 3;
     protected const interval = "122192928000000000"; //  Time (in 100ns steps) between the start of the Gregorian and Unix epochs
     public const nsDNS  = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
     public const nsURL  = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
     public const nsOID  = '6ba7b812-9dad-11d1-80b4-00c04fd430c8';
     public const nsX500 = '6ba7b814-9dad-11d1-80b4-00c04fd430c8';
-    public const bigChoose = -1;
-    public const bigNot    = 0;
-    public const bigNative = 1;
-    public const bigGMP    = 2;
-    public const bigBC     = 3;
-    public const bigSecLib = 4;
-    public const randChoose  = -1;
-    public const randPoor    = 0;
-    public const randDev     = 1;
-    public const randCAPICOM = 2;
-    public const randOpenSSL = 3;
-    public const randMcrypt  = 4;
-    public const randNative  = 5;
-    //static properties
     protected static $bignum              = self::bigChoose;
-    protected static $storeClass          = UUIDStorageStable::class;
     /** @var \JKingWeb\DrUUID\UUIDStorage */
     protected static $store;
-    //instance properties
     protected $bytes;
     protected $hex;
     protected $string;
@@ -253,6 +242,10 @@ class UUID {
         }
     }
 
+    public static function registerStorage(UUIDStorage $store): void {
+        static::$store = $store;
+    }
+
     protected function __construct(string $uuid) {
         if (strlen($uuid) !== 16)
             throw new UUIDException("Input must be a valid UUID.", 3);
@@ -275,7 +268,7 @@ class UUID {
            These are derived from the time at which they were generated. */
         // Check for native 64-bit integer support
         if (static::$bignum === self::bigChoose)
-            static::$bignum = (\PHP_INT_SIZE >= 8) ? self::bigNative : self::bigNot;
+            static::$bignum = static::initBignum();
         // ensure a store is available
         if (static::$store === null)
             static::$store = new UUIDStorageVolatile;
@@ -378,7 +371,6 @@ class UUID {
                 $out = dechex($time + self::interval);
                 break;
             case self::bigNot:
-            case self::bigSecLib:
                 // add the magic interval
                 $out = static::bigAdd($time, self::interval);
                 // convert to hexdecimal notation, big-endian
@@ -437,7 +429,6 @@ class UUID {
                 $time = bcsub($time, self::interval);
                 break;
             case self::bigNot:
-            case self::bigSecLib:
                 $time = static::bigSub(static::bigDec($hex), self::interval);
                 break;
             default:
@@ -477,91 +468,15 @@ class UUID {
         return random_bytes($bytes);
     }
 
-    public static function initAccurate(): void {
-        static::initBignum();
-        if (!is_object(static::$store)) {
-            try {
-                call_user_func_array(array("self", "initStorage"), func_get_args());
-            } catch(\Exception $e) {
-                throw new UUIDStorageException("Stable storage not available.", 2003, $e);
-            }
-        } else if (!(static::$store instanceof UUIDStorage)) {
-            throw new UUIDStorageException("Storage is invalid.", 2004);
-        }
-    }
-
-    public static function initBignum(?int $how = null): int {
-        /* Check to see if PHP is running in a 32-bit environment and if so,
-           use GMP or BC Math if available. */
-        if ($how === null) {
-            if (static::$bignum !== self::bigChoose) { // determination has already been made
-                return static::$bignum;
-            } else if (\PHP_INT_SIZE >= 8) {
-                static::$bignum = self::bigNative;
-            } else if (function_exists("gmp_add")) {
-                static::$bignum = self::bigGMP;
-            } else if (function_exists("bcadd")) {
-                static::$bignum = self::bigBC;
-            } else {
-                static::$bignum = self::bigNot;
-            }
+    protected static function initBignum(): int {
+        if (\PHP_INT_SIZE >= 8) {
+            return self::bigNative;
+        } else if (function_exists("gmp_add")) {
+            return self::bigGMP;
+        } else if (function_exists("bcadd")) {
+            return self::bigBC;
         } else {
-            switch($how) {
-                case self::bigChoose:
-                    static::$bignum = $how;
-                    return static::initBignum();
-                case self::bigSecLib:
-                case self::bigNot:
-                    break;
-                case self::bigNative:
-                    if (\PHP_INT_SIZE < 8)
-                        throw new UUIDException("Bignum method is not available.", 801);
-                    break;
-                case self::bigGMP:
-                    if (!function_exists("gmp_add"))
-                        throw new UUIDException("Bignum method is not available.", 801);
-                    break;
-                case self::bigBC:
-                    if (!function_exists("bcadd"))
-                        throw new UUIDException("Bignum method is not available.", 801);
-                    break;
-                default:
-                    throw new UUIDException("Bignum method not implemented.", 901);
-            }
-            static::$bignum = $how;
-        }
-        return static::$bignum;
-    }
-
-    public static function initStorage(?string $file = null): void {
-        if (static::$storeClass == UUIDStorageStable::class) {
-            try {static::$store = new UUIDStorageStable($file);}
-            catch(\Exception $e) {throw new UUIDStorageException("Storage class could not be instantiated with supplied arguments.", 1003, $e);}
-            return;
-        }
-        $store = new \ReflectionClass(static::$storeClass);
-        $args = func_get_args();
-        try {static::$store = $store->newInstanceArgs($args);}
-        catch(\Exception $e) {throw new UUIDStorageException("Storage class could not be instantiated with supplied arguments.", 1003, $e);}
-    }
-
-    public static function registerStorage(string $name): void {
-        try {
-            $store = new \ReflectionClass($name);
-        } catch(\Exception $e) {
-            throw new UUIDStorageException("Storage class does not exist.", 1001, $e);
-        }
-        if (!($store instanceof UUIDStorage))
-            throw new UUIDStorageException("Storage class does not implement the UUIDStorage interface.", 1002);
-        static::$storeClass = $name;
-        if (func_num_args() > 1) {
-            $args = func_get_args();
-            array_shift($args);
-            try {
-                static::$store = $store->newInstanceArgs($args);
-            } catch(\Exception $e) {
-                throw new UUIDStorageException("Storage class could not be instantiated with supplied arguments.", 1003, $e);
-            }
+            return self::bigNot;
         }
     }
 

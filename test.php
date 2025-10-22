@@ -18,6 +18,8 @@ define("TEST_RAND4", hex2bin("919108F752D133205BACF847DB4148A8"));
 define("TEST_RAND7", hex2bin("0CC318C4DC0C0C07398F"));
 
 class Test extends UUID {
+    protected static $bignum = self::bigNot;
+
     public static function randomBytes(int $bytes): string {
         if ($bytes == 10) {
             return TEST_RAND7;
@@ -38,9 +40,6 @@ class Test extends UUID {
 }
 
 class TestStorage implements UUIDStorage {
-    public function __construct($ook) {
-    }
-
     public function getNode(): ?string {
         return null;
     }
@@ -65,9 +64,8 @@ $tests = [
     7 => ["017F22E2-79B0-7CC3-98C4-DC0C0C07398F", [7]],
 ];
 
-Test::initBignum(TEST::bigNot);
 foreach ($tests as $v => [$exp, $params]) {
-    Test::registerStorage(TestStorage::class, "ook");
+    Test::registerStorage(new TestStorage);
     $exp = strtolower($exp);
     $act = Test::mintStr(...$params);
     if ($act === $exp) {
