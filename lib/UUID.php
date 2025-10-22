@@ -169,10 +169,13 @@ class UUID {
 				else
 					return 0;
 			case "node":
-				if (ord($this->bytes[6])>>4==1)
-					return bin2hex(strrev(substr($this->bytes,10)));
-				else
-					return NULL;
+				switch (ord($this->bytes[6])>>4) {
+					case 1:
+					case 6:
+						return bin2hex(strrev(substr($this->bytes, 10)));
+					default:
+						return NULL;
+				}
 			case "time":
 				switch (ord($this->bytes[6])>>4) {
 					case 1:
@@ -685,94 +688,94 @@ class UUID {
 		}
 	}
 
-    protected static function bigAdd($a, $b) {
-        $s = max(strlen($a), strlen($b));
-        $a = str_pad($a, $s, "0", STR_PAD_LEFT);
-        $b = str_pad($b, $s, "0", STR_PAD_LEFT);
-        $c = 0;
-        $n = "";
-        for ($i = $s - 9; $i > -9; $i -= 9) {
-            $ss = $i < 0 ? $i + 9 : 9;
-            $aa = substr($a, max(0, $i), $ss);
-            $bb = substr($b, max(0, $i), $ss);
-            $n = (($aa + $bb + $c) % 1000000000).$n;
-            $c = intdiv($aa + $bb + $c, 1000000000);
-        }
-        if ($c) {
-            $n = $c.$n;
-        }
-        return $n;
-    }
+	protected static function bigAdd($a, $b) {
+		$s = max(strlen($a), strlen($b));
+		$a = str_pad($a, $s, "0", STR_PAD_LEFT);
+		$b = str_pad($b, $s, "0", STR_PAD_LEFT);
+		$c = 0;
+		$n = "";
+		for ($i = $s - 9; $i > -9; $i -= 9) {
+			$ss = $i < 0 ? $i + 9 : 9;
+			$aa = substr($a, max(0, $i), $ss);
+			$bb = substr($b, max(0, $i), $ss);
+			$n = (($aa + $bb + $c) % 1000000000).$n;
+			$c = intdiv($aa + $bb + $c, 1000000000);
+		}
+		if ($c) {
+			$n = $c.$n;
+		}
+		return $n;
+	}
 
-    protected static function bigSub($a, $b) {
-        $m = 1000000000;
-        $s = max(strlen($a), strlen($b));
-        $a = str_pad($a, $s, "0", STR_PAD_LEFT);
-        $b = str_pad($b, $s, "0", STR_PAD_LEFT);
-        $c = 0;
-        $n = "";
-        for ($i = $s - 9; $i > -9; $i -= 9) {
-            $ss = $i < 0 ? $i + 9 : 9;
-            $aa = substr($a, max(0, $i), $ss);
-            $bb = substr($b, max(0, $i), $ss);
-            $nn = $aa - $bb - $c;
-            if ($nn < 0) {
-                $nn = $m + $nn;
-                $c = 1;
-            } else {
-                $c = 0;
-            }
-            $n = str_pad($nn, 9, "0", STR_PAD_LEFT).$n;
-        }
-        return ltrim($n, "0");
-    }
-    protected static function bigHex($n) {
-        $h = "";
-        $n = (string) $n;
-        $d = (string) (2**24);
-        while ($n) {
-            $s = strlen($n);
-            $q = "";
-            $r = 0;
-            $i = 0;
-            do {
-                $nn = $r.$n[$i++];
-                while ($nn < $d && $i < $s) {
-                    $nn .= $n[$i++];
-                    $q .= "0";
-                }
-                $qq = intdiv((int) $nn, (int) $d);
-                $q .= $qq;
-                $r = (int) $nn % (int) $d;
-            } while ($i < $s);
-            $h = str_pad(dechex($r), 6, "0", STR_PAD_LEFT).$h;
-            $n = ltrim($q, "0");
-        }
-        return ltrim($h, "0");
-    }
+	protected static function bigSub($a, $b) {
+		$m = 1000000000;
+		$s = max(strlen($a), strlen($b));
+		$a = str_pad($a, $s, "0", STR_PAD_LEFT);
+		$b = str_pad($b, $s, "0", STR_PAD_LEFT);
+		$c = 0;
+		$n = "";
+		for ($i = $s - 9; $i > -9; $i -= 9) {
+			$ss = $i < 0 ? $i + 9 : 9;
+			$aa = substr($a, max(0, $i), $ss);
+			$bb = substr($b, max(0, $i), $ss);
+			$nn = $aa - $bb - $c;
+			if ($nn < 0) {
+				$nn = $m + $nn;
+				$c = 1;
+			} else {
+				$c = 0;
+			}
+			$n = str_pad($nn, 9, "0", STR_PAD_LEFT).$n;
+		}
+		return ltrim($n, "0");
+	}
+	protected static function bigHex($n) {
+		$h = "";
+		$n = (string) $n;
+		$d = (string) (2**24);
+		while ($n) {
+			$s = strlen($n);
+			$q = "";
+			$r = 0;
+			$i = 0;
+			do {
+				$nn = $r.$n[$i++];
+				while ($nn < $d && $i < $s) {
+					$nn .= $n[$i++];
+					$q .= "0";
+				}
+				$qq = intdiv((int) $nn, (int) $d);
+				$q .= $qq;
+				$r = (int) $nn % (int) $d;
+			} while ($i < $s);
+			$h = str_pad(dechex($r), 6, "0", STR_PAD_LEFT).$h;
+			$n = ltrim($q, "0");
+		}
+		return ltrim($h, "0");
+	}
 
-    protected static function bigDec($h) {
-        $n = "";
-        $d = 100000000;
-        while ($h) {
-            $s = strlen($h);
-            $q = "";
-            $r = "";
-            $i = 0;
-            do {
-                $hh = $r.$h[$i++];
-                while (hexdec($hh) < $d && $i < $s) {
-                    $hh .= $h[$i++];
-                    $q .= "0";
-                }
-                $qq = intdiv(hexdec($hh), $d);
-                $q .= dechex($qq);
-                $r = dechex(hexdec($hh) % $d);
-            } while ($i < $s);
-            $n = str_pad(hexdec($r), 8, "0", STR_PAD_LEFT).$n;
-            $h = ltrim($q, "0");
-        }
-        return ltrim($n, "0");
-    }
+	protected static function bigDec($h) {
+		$n = "";
+		$d = 100000000;
+		while ($h) {
+			$s = strlen($h);
+			$q = "";
+			$r = "";
+			$i = 0;
+			do {
+				$hh = $r.$h[$i++];
+				while (hexdec($hh) < $d && $i < $s) {
+					$hh .= $h[$i++];
+					$q .= "0";
+				}
+				$qq = intdiv(hexdec($hh), $d);
+				$q .= dechex($qq);
+				$r = dechex(hexdec($hh) % $d);
+			} while ($i < $s);
+			$n = str_pad(hexdec($r), 8, "0", STR_PAD_LEFT).$n;
+			$h = ltrim($q, "0");
+		}
+		return ltrim($n, "0");
+	}
 
 }
