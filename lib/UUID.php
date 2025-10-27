@@ -72,8 +72,6 @@ class UUID {
         switch($ver) {
             case 1:
                 return new static(static::mintTime());
-            case 2:
-                throw new UUIDException("Version 2 is unsupported.", 2);
             case 3:
                 return new static(static::mintName(self::MD5, $name, $namespace));
             case 4:
@@ -87,7 +85,7 @@ class UUID {
             case 8:
                 return new static(static::mintCustom($name, $namespace));
             default:
-                throw new UUIDException("Selected version is invalid or unsupported.", 1);
+                throw new \InvalidArgumentException("Version $ver UUIDs are not supported.");
         }
     }
 
@@ -113,9 +111,6 @@ class UUID {
             case 1:
                 $uuid = static::mintTime();
                 break;
-            case 2:
-                throw new UUIDException("Version 2 is unsupported.", 2);
-                break;
             case 3:
                 $uuid = static::mintName(self::MD5, $name, $namespace);
                 break;
@@ -134,7 +129,7 @@ class UUID {
             case 8:
                 $uuid = static::mintCustom($name, $namespace);
             default:
-                throw new UUIDException("Selected version is invalid or unsupported.", 1);
+                throw new \InvalidArgumentException("Version $ver UUIDs are not supported.");
         }
         return
             bin2hex(substr($uuid, 0, 4))."-".
@@ -258,7 +253,7 @@ class UUID {
 
     protected function __construct(string $uuid) {
         if (strlen($uuid) !== 16) {
-            throw new UUIDException("Input must be a valid UUID.", 3);
+            throw new \InvalidArgumentException("Input must be a valid UUID.");
         }
         $this->bytes  = $uuid;
         // Optimize the most common use
@@ -272,7 +267,7 @@ class UUID {
 
     /** A stub for implementing Version 8 UUID generation */
     protected static function mintCustom(?string $data, ?string $ns): string {
-        throw new UUIDException("Selected version is invalid or unsupported.", 1);
+        throw new \InvalidArgumentException("Version 8 UUIDs are not supported.");
     }
 
     /** Generates a version 1 or Version 6 UUID
@@ -351,13 +346,13 @@ class UUID {
      * @param ?string $ns The namespace containing the name
      */
     protected static function mintName(int $ver, ?string $name, ?string $ns): string {
-        if (!$name) {
-            throw new UUIDException("A name-string is required for Version 3 or 5 UUIDs.", 201);
+        if ($name === null) {
+            throw new \InvalidArgumentException("A name-string is required for Version 3 or 5 UUIDs.");
         }
         // if the namespace UUID isn't binary, make it so
         $ns = static::makeBin($ns);
         if (!$ns) {
-            throw new UUIDException("A valid UUID namespace is required for Version 3 or 5 UUIDs.", 202);
+            throw new \InvalidArgumentException("A valid UUID namespace is required for Version 3 or 5 UUIDs.");
         }
         switch($ver) {
             case self::MD5:
@@ -421,8 +416,6 @@ class UUID {
                     $out = base_convert($mod, 10, 16).$out;
                 } while($in > 0);
                 break;
-            default:
-                throw new UUIDException("Bignum method not implemented.", 901);
         }
         // convert to binary, padding to 8 bytes
         return pack("H*", str_pad($out, 16, "0", \STR_PAD_LEFT));
@@ -465,8 +458,6 @@ class UUID {
             case self::bigNot:
                 $time = static::bigSub(static::bigDec($hex), self::interval);
                 break;
-            default:
-                throw new UUIDException("Bignum method not implemented.", 901);
         }
         return substr($time, 0, strlen($time)-7).".".substr($time, strlen($time)-7);
     }
