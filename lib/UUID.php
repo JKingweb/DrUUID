@@ -149,30 +149,33 @@ class UUID {
      * This can be used to extract data from the UUID, or the easily convert to a different representation.
      *
      * @param string $uuid The UUID to import. This can be in canonical form, as a binary string, or as a string of hexadecimal digits
+     * @return self|false
      */
-    public static function import(string $uuid): self {
+    public static function import(string $uuid) {
         return new static(static::makeBin($uuid));
     }
 
     /** Compares two UUIDs of arbitrary representation for equality
      *
-     * The two UUIDs can be a UUID object, a canonical string, a binary string, or a string of hexadecimal digits
+     * The two UUIDs can be a UUID object, a canonical string, a binary string, or a string of hexadecimal digits.
+     * 
+     * This functiion will return true if neither argument is a UUID
      *
      * @param static|string $a The first UUID to compare
      * @param static|string $b The second UUID to compare
      */
     public static function compare($a, $b): bool {
-        /* Compares the binary representations of two UUIDs.
-           The comparison will return true if they are bit-exact,
-           or if neither is valid. */
         if (static::makeBin($a) === static::makeBin($b))
             return true;
         else
             return false;
     }
 
+    /** Generates a random clock sequence
+     *
+     * This is just two random bytes with the two most significant bits set to zero.
+     */
     protected static function seq(): string {
-        /* Generate a random clock sequence; this is just two random bytes with the two most significant bits set to zero. */
         $seq = static::randomBytes(2);
         $seq[0] = chr(ord($seq[0]) & self::clearVar);
         return $seq;
@@ -242,6 +245,14 @@ class UUID {
         }
     }
 
+    /** Instructs DrUUID to use an alternate state-storage engine for Version 1 and Version 6 UUIDs
+     * 
+     * By default DrUUID only stores the required state for optimal uniqueness
+     * (the node, the clock sequence, and the last time at which a UUID was
+     * generated) in memory. If the application is using Version 1 or Version 6
+     * UUIDs and is storing its state to disk anyway, it can make use of an
+     * implementation of the UUID interface with this library.
+    */
     public static function registerStorage(UUIDStorage $store): void {
         static::$store = $store;
     }
@@ -259,13 +270,16 @@ class UUID {
             bin2hex(substr($uuid, 10, 6));
     }
 
+    /** A stub for implementing Version 8 UUID generation */
     protected static function mintCustom(?string $data, ?string $ns): string {
         throw new UUIDException("Selected version is invalid or unsupported.", 1);
     }
 
+    /** Generates a version 1 or Version 6 UUID
+     * 
+     * @param bool $ordered Whether to produce a Version 6 UUID, which sorts properly by time
+    */
     protected static function mintTime(bool $ordered = false): string {
-        /* Generates a Version 1 UUID.
-           These are derived from the time at which they were generated. */
         // Check for native 64-bit integer support
         if (static::$bignum === self::bigChoose)
             static::$bignum = static::initBignum();
@@ -282,7 +296,7 @@ class UUID {
             static::$store->setSequence($seq);
             static::$store->setTimestamp($time);
         }
-        // construct a 60-bit timestamp, padded to 64 bits
+        // construct a 60-bit timestamp, padded to 64 bits, and combine it with the version bits
         $time = static::buildTime($time);
         if ($ordered) {
             $uuid = bin2hex($time);
@@ -303,15 +317,10 @@ class UUID {
         return $uuid;
     }
 
+    /** Generates a Version 7 UUID */
     protected static function mintTime7(): string {
-        /* Generates a Version 7 UUID.
-           These are also time-based, but use a simple Unix timestamp
-           with miliseconds. Since these are 48 bits in length, which
-           fits within the integer precision of double-precision
-           floating point numbers, they are easy to handle even on
-           32-bit systems.
-        */
         $time = static::normalizeTime(static::now(), 3);
+        // Note that doing base_convert here is safe on 32-bit systems because the floating-point precision threshold is 53 bits, and we're converting a 48-bit timestamp
         $time = base_convert($time, 10, 16);
         $time = pack("H*", str_pad($time, 12, "0", \STR_PAD_LEFT));
         // fill the rest of the UUID with random bytes
@@ -322,9 +331,8 @@ class UUID {
         return $uuid;
     }
 
+    /** Generates a Version 4 UUID */
     protected static function mintRand(): string {
-        /* Generate a Version 4 UUID.
-           These are derived solely from random numbers. */
         // generate random fields
         $uuid = static::randomBytes(16);
         // set variant
@@ -334,10 +342,14 @@ class UUID {
         return $uuid;
     }
 
-    protected static function mintName(int $ver, ?string $node, ?string $ns): string {
-        /* Generates a Version 3 or Version 5 UUID.
-                    These are derived from a hash of a name and its namespace, in binary form. */
-        if (!$node)
+    /** Generates a Version 3 or Version 5 UUID
+     * 
+     * @param int $ver Which type of hash-based UUID to produce
+     * @param ?string $node The name identified by the UUID
+     * @param ?string $ns The namespace containing the name
+     */
+    protected static function mintName(int $ver, ?string $name, ?string $ns): string {
+        if (!$name)
             throw new UUIDException("A name-string is required for Version 3 or 5 UUIDs.", 201);
         // if the namespace UUID isn't binary, make it so
         $ns = static::makeBin($ns);
@@ -346,11 +358,11 @@ class UUID {
         switch($ver) {
             case self::MD5:
                 $version = self::version3;
-                $uuid = md5($ns.$node, true);
+                $uuid = md5($ns.$name, true);
                 break;
             case self::SHA1:
                 $version = self::version5;
-                $uuid = substr(sha1($ns.$node, true), 0, 16);
+                $uuid = substr(sha1($ns.$name, true), 0, 16);
                 break;
         }
         // set variant
@@ -360,12 +372,25 @@ class UUID {
         return ($uuid);
     }
 
+    /** Converts the output of micrtoime() to an integer string with requested precision
+     * 
+     * @param int $precision The digits of sub-second precision to retain
+     */
     protected static function normalizeTime(string $time, int $precision): string {
         $time = explode(" ", $time);
         return $time[1].substr(str_pad($time[0], $precision + 2, "0", \STR_PAD_RIGHT), 2, $precision);
     }
 
-    protected static function buildTime($time): string {
+    /** Prepares a 60-bit Gregorian-epoch timestamp from a Unix-epoch timestamp,
+     * both with seven-digit sub-second precision
+     * 
+     * This function is responsible for adding the Gregorian-to-Unix epoch
+     * interval to the timestamp, and converting the result to a big-endian binary
+     * string. On 32-bit systems this requires arithmetic on numbers which exceed
+     * both PHP_MAX_INT and the maximum precision of floating-point numbers, so we
+     * need to jump through some hoops in a 32-bit environment, complicating this task.
+     */
+    protected static function buildTime(string $time): string {
         switch (static::$bignum) {
             case self::bigNative:
                 $out = dechex($time + self::interval);
@@ -399,12 +424,16 @@ class UUID {
         return pack("H*", str_pad($out, 16, "0", \STR_PAD_LEFT));
     }
 
+    /** Convert a UUID timestamp (in hexadecimal notation) to a
+     * Unix timestamp with microseconds
+     * 
+     * This operation is the proximate inverse of the buildTime()
+     * function, and thus has the same inherent complexities.
+     */
     protected static function decodeTimestamp(string $hex): string {
-        /* Convrt a UUID timestamp (in hex notation) to
-           a Unix timestamp with microseconds. */
         // Check for native 64-bit integer support
         if (static::$bignum === self::bigChoose)
-            static::$bignum = (\PHP_INT_SIZE >= 8) ? self::bigNative : self::bigNot;
+            static::$bignum = static::initBignum();
         switch(static::$bignum) {
             case self::bigNative:
                 $time = hexdec($hex) - self::interval;
@@ -437,9 +466,14 @@ class UUID {
         return substr($time, 0, strlen($time)-7).".".substr($time, strlen($time)-7);
     }
 
+    /** Normalizes a UUID to its binary representation
+     * 
+     * This is used for comparing two UUIDs or importing a UUID
+     * 
+     * @param UUID|string $str The UUID to normalize
+     * @return string|false
+     */
     protected static function makeBin($str) {
-        /* Ensure that an input string is a UUID.
-           Returns binary representation, or false on failure. */
         $len = 16;
         if ($str instanceof self)
             return $str->bytes;
@@ -454,20 +488,40 @@ class UUID {
                 return pack("H*", $str);
     }
 
+    /** Generates a random node ID
+     * 
+     * This is simply six random bytes with the least significant bit of the
+     * most significant byte set to one.
+     */
     protected static function makeNode(): string {
         $node = static::randomBytes(6);
         $node[0] = chr(ord($node[0]) | 1);
         return $node;
     }
 
+    /** Returns the current time with microseconds
+     * 
+     * This wraps the built-in microtime() function so that it may be easily
+     * overridden during testing.
+     */
     protected static function now(): string {
         return microtime();
     }
 
-    protected static function randomBytes(int $bytes): string {
-        return random_bytes($bytes);
+    /** Returns the requested number of random bytes
+     * 
+     * This wraps the built-in random_bytes() function so that it may be easily
+     * overridden during testing.
+     */
+    protected static function randomBytes(int $count): string {
+        return random_bytes($count);
     }
 
+    /** Selects which method to use when performing arithmetic on 60-bit integers
+     * 
+     * In 64-bit environments the calculation is performed directly; only in
+     * 32-bit environments is anything more complex required
+     */
     protected static function initBignum(): int {
         if (\PHP_INT_SIZE >= 8) {
             return self::bigNative;
@@ -480,6 +534,15 @@ class UUID {
         }
     }
 
+    /** Adds two string representations of integers together
+     * 
+     * This is used to add the interval between Gregorian
+     * and Unix epochs to a timestamp. It is not suitable for
+     * general purposes; in particular it does not handle
+     * negative numbers at all.
+     * 
+     * This is only used in 32-bit environments in the absence of GMP and BCMath.
+     */
     protected static function bigAdd(string $a, string $b): string {
         $d = 1000000000;
         $s = max(strlen($a), strlen($b));
@@ -500,6 +563,16 @@ class UUID {
         return $n;
     }
 
+    /** Performs a subtraction on two string representations of integers
+     * 
+     * This is used to remove the interval between Gregorian and Unix
+     * epochs from a timestamp. It is not suitable for general purposes;
+     * in particular it does not handle negative numbers at all, including
+     * a negative result from two positive integers. Thus, $b must be
+     * less than $a to achieve sensible results.
+     * 
+     * This is only used in 32-bit environments in the absence of GMP and BCMath.
+     */
     protected static function bigSub(string $a, string $b): string {
         $s = max(strlen($a), strlen($b));
         $a = str_pad($a, $s, "0", \STR_PAD_LEFT);
@@ -521,6 +594,11 @@ class UUID {
         }
         return ltrim($n, "0");
     }
+
+    /** Converts a string representation of a decimal integer to hexdecimal
+     * 
+     * This is only used in 32-bit environments in the absence of GMP and BCMath.
+     */
     protected static function bigHex(string $n): string {
         $h = "";
         $d = (string) (2**24);
@@ -545,6 +623,10 @@ class UUID {
         return ltrim($h, "0");
     }
 
+    /** Converts a string representation of a hexadecimal integer to decimal
+     * 
+     * This is only used in 32-bit environments in the absence of GMP and BCMath.
+     */
     protected static function bigDec(string $h): string {
         $n = "";
         $d = 100000000;
