@@ -39,7 +39,7 @@ class UUID {
     public const nsURL  = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
     public const nsOID  = '6ba7b812-9dad-11d1-80b4-00c04fd430c8';
     public const nsX500 = '6ba7b814-9dad-11d1-80b4-00c04fd430c8';
-    protected static $bignum              = self::bigChoose;
+    protected static $bignum = self::bigChoose;
     /** @var \JKingWeb\DrUUID\UUIDStorage */
     protected static $store;
     protected $bytes;
@@ -165,10 +165,10 @@ class UUID {
      * @param static|string $b The second UUID to compare
      */
     public static function compare($a, $b): bool {
-        if (static::makeBin($a) === static::makeBin($b))
+        if (static::makeBin($a) === static::makeBin($b)) {
             return true;
-        else
-            return false;
+        }
+        return false;
     }
 
     /** Generates a random clock sequence
@@ -199,14 +199,14 @@ class UUID {
                 return ord($this->bytes[6]) >> 4;
             case "variant":
                 $byte = ord($this->bytes[8]);
-                if ($byte >= self::varRes)
+                if ($byte >= self::varRes) {
                     return 3;
-                if ($byte >= self::varMS)
+                } elseif ($byte >= self::varMS) {
                     return 2;
-                if ($byte >= self::varRFC)
+                } elseif ($byte >= self::varRFC) {
                     return 1;
-                else
-                    return 0;
+                }
+                return 0;
             case "node":
                 switch (ord($this->bytes[6])>>4) {
                     case 1:
@@ -238,7 +238,6 @@ class UUID {
                         return $time;
                     default:
                         return null;
-
                 }
             default:
                 return null;
@@ -258,8 +257,9 @@ class UUID {
     }
 
     protected function __construct(string $uuid) {
-        if (strlen($uuid) !== 16)
+        if (strlen($uuid) !== 16) {
             throw new UUIDException("Input must be a valid UUID.", 3);
+        }
         $this->bytes  = $uuid;
         // Optimize the most common use
         $this->string =
@@ -281,11 +281,13 @@ class UUID {
     */
     protected static function mintTime(bool $ordered = false): string {
         // Check for native 64-bit integer support
-        if (static::$bignum === self::bigChoose)
+        if (static::$bignum === self::bigChoose) {
             static::$bignum = static::initBignum();
+        }
         // ensure a store is available
-        if (static::$store === null)
+        if (static::$store === null) {
             static::$store = new UUIDStorageVolatile;
+        }
         // Get the current time
         $time = static::normalizeTime(static::now(), 7);
         // Get the node and sequence from storage
@@ -349,12 +351,14 @@ class UUID {
      * @param ?string $ns The namespace containing the name
      */
     protected static function mintName(int $ver, ?string $name, ?string $ns): string {
-        if (!$name)
+        if (!$name) {
             throw new UUIDException("A name-string is required for Version 3 or 5 UUIDs.", 201);
+        }
         // if the namespace UUID isn't binary, make it so
         $ns = static::makeBin($ns);
-        if (!$ns)
+        if (!$ns) {
             throw new UUIDException("A valid UUID namespace is required for Version 3 or 5 UUIDs.", 202);
+        }
         switch($ver) {
             case self::MD5:
                 $version = self::version3;
@@ -432,8 +436,9 @@ class UUID {
      */
     protected static function decodeTimestamp(string $hex): string {
         // Check for native 64-bit integer support
-        if (static::$bignum === self::bigChoose)
+        if (static::$bignum === self::bigChoose) {
             static::$bignum = static::initBignum();
+        }
         switch(static::$bignum) {
             case self::bigNative:
                 $time = hexdec($hex) - self::interval;
@@ -475,17 +480,17 @@ class UUID {
      */
     protected static function makeBin($str) {
         $len = 16;
-        if ($str instanceof self)
+        if ($str instanceof self) {
             return $str->bytes;
-        if (strlen($str) === $len)
+        } elseif (strlen($str) === $len) {
             return $str;
-        else
-            $str = preg_replace("/^urn:uuid:/is", "", $str); // strip URN scheme and namespace
-            $str = preg_replace("/[^a-f0-9]/is", "", $str);  // strip non-hex characters
-            if (strlen($str) !== ($len * 2))
-                return false;
-            else
-                return pack("H*", $str);
+        }
+        $str = preg_replace("/^urn:uuid:/is", "", $str); // strip URN scheme and namespace
+        $str = preg_replace("/[^a-f0-9]/is", "", $str);  // strip non-hex characters
+        if (strlen($str) !== ($len * 2)) {
+            return false;
+        }
+        return pack("H*", $str);
     }
 
     /** Generates a random node ID
@@ -529,9 +534,8 @@ class UUID {
             return self::bigGMP;
         } else if (function_exists("bcadd")) {
             return self::bigBC;
-        } else {
-            return self::bigNot;
         }
+        return self::bigNot;
     }
 
     /** Adds two string representations of integers together

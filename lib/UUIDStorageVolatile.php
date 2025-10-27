@@ -14,12 +14,12 @@ class UUIDStorageVolatile implements UUIDStorage {
         if ($node !== $this->node) {
             $this->node = $node;
             return null;
-        }
-        if ($this->sequence === null)
+        } elseif ($this->sequence === null) {
             return null;
-        if ($timestamp <= $this->timestamp)
+        } elseif ($timestamp <= $this->timestamp) {
             $this->sequence = pack("n", (unpack("nseq", $this->sequence)['seq'] + 1) & self::maxSequence);
-        $this->setTimestamp($timestamp);
+            $this->setTimestamp($timestamp);
+        }
         return $this->sequence;
     }
 
