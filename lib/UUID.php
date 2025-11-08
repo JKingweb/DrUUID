@@ -291,8 +291,8 @@ class UUID {
         if ($seq === null) {
             $seq = static::seq();
             static::$store->setSequence($seq);
-            static::$store->setTimestamp($time);
         }
+        static::$store->setTimestamp($time);
         // construct a 60-bit timestamp, padded to 64 bits, and combine it with the version bits
         $time = static::buildTime($time);
         if ($ordered) {
