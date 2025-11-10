@@ -14,10 +14,6 @@
     "require": {
         "php": ">=7.1.0"
     },
-    "suggest": {
-        "ext-gmp": "Recommended on 32-bit installations for time-base UUIDs",
-        "ext-bcmath": "Supported alternative to GMP on 32-bit systems"
-    },
     "autoload": {
         "psr-4": {
             "JKingWeb\\DrUUID\\": "lib/"
