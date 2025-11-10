@@ -66,9 +66,9 @@ class UUID {
      *
      * @param int $ver The type of UUID to generate
      * @param ?string $name The name to hash, for Version 3 or 5 UUIDs
-     * @param ?string $namespace The namespace containing the $name, for Version 3 or 5 UUIDs
+     * @param UUID|string|null $namespace The namespace containing the $name, for Version 3 or 5 UUIDs
      */
-    public static function mint(int $ver = 7, ?string $name = null, ?string $namespace = null): static {
+    public static function mint(int $ver = 7, ?string $name = null, $namespace = null): static {
         switch($ver) {
             case 1:
                 return new static(static::mintTime());
@@ -104,9 +104,9 @@ class UUID {
      *
      * @param int $ver The type of UUID to generate
      * @param ?string $name The name to hash, for Version 3 or 5 UUIDs
-     * @param ?string $namespace The namespace containing the $name, for Version 3 or 5 UUIDs
+     * @param UUID|string|null $namespace The namespace containing the $name, for Version 3 or 5 UUIDs
      */
-    public static function mintStr(int $ver = 7, ?string $name = null, ?string $namespace = null): string {
+    public static function mintStr(int $ver = 7, ?string $name = null, $namespace = null): string {
         switch($ver) {
             case 1:
                 $uuid = static::mintTime();
