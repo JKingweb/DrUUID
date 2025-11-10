@@ -470,18 +470,22 @@ class UUID {
      * @return string|false
      */
     protected static function makeBin($str) {
-        $len = 16;
+        // if the input is already a UUID instance, return its bytes
         if ($str instanceof self) {
             return $str->bytes;
-        } elseif (strlen($str) === $len) {
+        }
+        $str = (string) $str;
+        // if the string is exactly 16 bytes long, assume it is a binary UUID
+        if (strlen($str) === 16) {
             return $str;
+        }
+        // reject anything which doesn't look like a UUID (32 hex digits, with or without dashes, enclosed by curly braces, or as a URN)
+        if (!preg_match("/^(?:urn:uuid:)?([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})$|^\{\1\}$|^[0-9a-f]{32}$/i", $str)) {
+            return false;
         }
         $str = preg_replace("/^urn:uuid:/is", "", $str); // strip URN scheme and namespace
         $str = preg_replace("/[^a-f0-9]/is", "", $str);  // strip non-hex characters
-        if (strlen($str) !== ($len * 2)) {
-            return false;
-        }
-        return pack("H*", $str);
+        return hex2bin($str);
     }
 
     /** Generates a random node ID
