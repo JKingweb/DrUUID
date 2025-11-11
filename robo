@@ -1,0 +1,13 @@
+#! /bin/sh
+base=`dirname "$0"`
+command="$1"
+robo="$base/vendor-bin/robo/vendor/bin/robo"
+php=php
+
+if [ $# -eq 0 ]; then
+    "$php" "$robo"
+else
+    shift
+    ulimit -n 2048
+    "$php" "$robo" "$command" -- "$@"
+fi

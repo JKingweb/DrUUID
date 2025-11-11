@@ -14,6 +14,20 @@
     "require": {
         "php": ">=7.1.0"
     },
+    "require-dev": {
+        "bamarni/composer-bin-plugin": "*"
+    },
+    "config": {
+        "allow-plugins": {
+            "bamarni/composer-bin-plugin": true
+        }
+    },
+    "extra": {
+        "bamarni-bin": {
+            "bin-links": false,
+            "forward-command": true
+        }
+    },
     "autoload": {
         "psr-4": {
             "JKingWeb\\DrUUID\\": "lib/"

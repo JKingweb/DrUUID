@@ -503,6 +503,8 @@ class UUID {
      * 
      * This wraps the built-in microtime() function so that it may be easily
      * overridden during testing.
+     * 
+     * @codeCoverageIgnore
      */
     protected static function now(): string {
         return microtime();
@@ -512,6 +514,8 @@ class UUID {
      * 
      * This wraps the built-in random_bytes() function so that it may be easily
      * overridden during testing.
+     * 
+     * @codeCoverageIgnore
      */
     protected static function randomBytes(int $count): string {
         return random_bytes($count);
@@ -521,6 +525,8 @@ class UUID {
      * 
      * In 64-bit environments the calculation is performed directly; only in
      * 32-bit environments is anything more complex required
+     * 
+     * @codeCoverageIgnore
      */
     protected static function initBignum(): int {
         if (\PHP_INT_SIZE >= 8) {
@@ -557,7 +563,7 @@ class UUID {
             $c = intdiv($aa + $bb + $c, $d);
         }
         if ($c) {
-            $n = $c.$n;
+            $n = $c.$n; // @codeCoverageIgnore
         }
         return $n;
     }
