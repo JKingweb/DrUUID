@@ -172,7 +172,7 @@ class UUID {
 				switch (ord($this->bytes[6])>>4) {
 					case 1:
 					case 6:
-						return bin2hex(strrev(substr($this->bytes, 10)));
+						return bin2hex(substr($this->bytes, 10));
 					default:
 						return NULL;
 				}
@@ -725,7 +725,7 @@ class UUID {
 			} else {
 				$c = 0;
 			}
-			$n = str_pad($nn, 9, "0", STR_PAD_LEFT).$n;
+			$n = str_pad((string) $nn, 9, "0", STR_PAD_LEFT).$n;
 		}
 		return ltrim($n, "0");
 	}
