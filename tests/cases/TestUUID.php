@@ -12,10 +12,6 @@ use PHPUnit\Framework\TestCase;
 
 #[CoversClass(UUID::class)]
 class TestUUID extends TestCase {
-    public function tearDown(): void {
-        \Phake::resetStaticInfo();
-    }
-
     protected function makeClass(string $name, array $rand, \DateTimeInterface $time, ?string $bignum = "bigNot"): string {
         $time = $time->format("0.u00 U");
         $rand = var_export($rand, true);
@@ -37,7 +33,7 @@ PHP_CODE;
     #[DataProvider("provideStandardTests")]
     public function testStandardTests(string $exp, array $in): void {
         $exp = strtolower($exp); // some test data in RFC 9562 are uppercase, for whatever reason
-        $time = new \DateTime("2022-02-22T14:22:22-05:00");
+        $date = new \DateTime("2022-02-22T14:22:22-05:00");
         $rand = [
             2  => "33C8", // clock sequence for V1 and V6
             6  => "9E6BDECED846", // random node for V1 and V6
@@ -46,11 +42,30 @@ PHP_CODE;
         ];
         $class = @array_pop(explode("\\", __CLASS__))."_".__FUNCTION__;
         if (!class_exists($class)) {
-            eval($this->makeClass($class, $rand, $time));
+            eval($this->makeClass($class, $rand, $date));
         }
         $class::registerStorage(new UUIDStorageVolatile);
         $act = $class::mintStr(...$in);
         $this->assertSame($exp, $act);
+        $class::registerStorage(new UUIDStorageVolatile);
+        $act = $class::mint(...$in);
+        $this->assertSame($exp, (string) $act);
+        // check the properties of the UUID object while we're at it
+        $ver = $in[0];
+        $node = strtolower($rand[6]);
+        $node[1] = dechex(hexdec($node[1]) | 1);
+        $time = $date->format("U.");
+        $time1 = $time.$date->format("u0");
+        $time7 = $time.substr($date->format("u"), 0, 3);
+        $this->assertSame(hex2bin(str_replace("-", "", $exp)), $act->bytes);
+        $this->assertSame(str_replace("-", "", $exp), $act->hex);
+        $this->assertSame($exp, $act->string);
+        $this->assertSame("urn:uuid:".$exp, $act->urn);
+        $this->assertSame($ver, $act->version);
+        $this->assertSame(1, $act->variant);
+        $this->assertSame(in_array($ver, [1, 6]) ? $node : null, $act->node);
+        $this->assertSame(in_array($ver, [1, 6, 7]) ? ($ver === 7 ? $time7 : $time1) : null, $act->time);
+        $this->assertNull($act->ook);
     }
 
     public static function provideStandardTests(): iterable {
@@ -62,5 +77,21 @@ PHP_CODE;
             'Version 6' => ["1EC9414C-232A-6B00-B3C8-9F6BDECED846", [6]],
             'Version 7' => ["017F22E2-79B0-7CC3-98C4-DC0C0C07398F", [7]],
         ];
+    }
+
+    #[DataProvider("provideUnsupportedVersions")]
+    public function testRejectUnsupportedVersions(int $ver): void {
+        $this->expectException("\\InvalidArgumentException");
+        UUID::mint($ver);
+    }
+
+    #[DataProvider("provideUnsupportedVersions")]
+    public function testRejectUnsupportedVersionsAsString(int $ver): void {
+        $this->expectException("\\InvalidArgumentException");
+        UUID::mintStr($ver);
+    }
+
+    public static function provideUnsupportedVersions(): iterable {
+        return array_map(fn($v) => (array) $v, [0, 2, 8, 9, 10, 11, 12, 13, 14, 15]);
     }
 }

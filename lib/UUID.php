@@ -206,7 +206,7 @@ class UUID {
                 switch (ord($this->bytes[6])>>4) {
                     case 1:
                     case 6:
-                        return bin2hex(strrev(substr($this->bytes, 10)));
+                        return bin2hex(substr($this->bytes, 10));
                     default:
                         return null;
                 }
@@ -252,9 +252,7 @@ class UUID {
     }
 
     protected function __construct(string $uuid) {
-        if (strlen($uuid) !== 16) {
-            throw new \InvalidArgumentException("Input must be a valid UUID.");
-        }
+        assert(strlen($uuid) === 16, new \InvalidArgumentException("Input must be a valid UUID."));
         $this->bytes  = $uuid;
         // Optimize the most common use
         $this->string =
@@ -595,7 +593,7 @@ class UUID {
             } else {
                 $c = 0;
             }
-            $n = str_pad($nn, 9, "0", \STR_PAD_LEFT).$n;
+            $n = str_pad((string) $nn, 9, "0", \STR_PAD_LEFT).$n;
         }
         return ltrim($n, "0");
     }
