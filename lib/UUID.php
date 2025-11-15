@@ -191,7 +191,7 @@ class UUID {
             case "urn":
                 return "urn:uuid:".$this->string;
             case "version":
-                return ord($this->bytes[6]) >> 4;
+                return $this->__get("variant") === 1 ? ord($this->bytes[6]) >> 4 : null;
             case "variant":
                 $byte = ord($this->bytes[8]);
                 if ($byte >= self::varRes) {
@@ -203,6 +203,9 @@ class UUID {
                 }
                 return 0;
             case "node":
+                if ($this->__get("variant") !== 1) {
+                    return null;
+                }
                 switch (ord($this->bytes[6])>>4) {
                     case 1:
                     case 6:
@@ -211,6 +214,9 @@ class UUID {
                         return null;
                 }
             case "time":
+                if ($this->__get("variant") !== 1) {
+                    return null;
+                }
                 switch (ord($this->bytes[6])>>4) {
                     case 1:
                         // Restore contiguous big-endian byte order
@@ -457,6 +463,7 @@ class UUID {
                 $time = static::bigSub(static::bigDec($hex), self::interval);
                 break;
         }
+        $time = (string) $time;
         return substr($time, 0, strlen($time)-7).".".substr($time, strlen($time)-7);
     }
 
