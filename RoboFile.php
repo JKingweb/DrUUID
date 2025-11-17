@@ -110,8 +110,6 @@ class RoboFile extends \Robo\Tasks {
 
     /** Executes PHPUnit, used by the test and coverage tasks.
      *
-     * This also executes the built-in PHP Web server, which is required to fetch some newsfeeds during tests
-     *
      * @param string $executor The path to the PHP binary to execute with any required extra arguments. Normally this is either "php" or the result of findCoverageEngine()
      * @param string $set The set of tests to run, either "typical" (excludes redundant tests), "quick" (excludes redundant and slow tests), "coverage" (excludes tests not needed for coverage), or "full" (all tests)
      * @param array $args Extra arguments passed by Robo from the command line
@@ -140,7 +138,6 @@ class RoboFile extends \Robo\Tasks {
         }
         $execpath = norm(BASE."vendor-bin/phpunit/vendor/phpunit/phpunit/phpunit");
         $confpath = realpath(BASE_TEST."phpunit.dist.xml") ?: norm(BASE_TEST."phpunit.xml");
-        $this->taskServer(8000)->host("localhost")->dir(BASE_TEST."docroot")->rawArg("-n")->arg(BASE_TEST."server.php")->rawArg($this->blackhole())->background()->run();
         return $this->taskExec($executor)->option("-d", "zend.assertions=1")->arg($execpath)->option("-c", $confpath)->args(array_merge($extra, $args))->run();
     }
 }

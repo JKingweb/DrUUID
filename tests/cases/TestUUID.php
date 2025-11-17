@@ -7,9 +7,11 @@ use JKingWeb\DrUUID\UUID;
 use JKingWeb\DrUUID\UUIDStorageVolatile;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(UUID::class)]
+#[CoversClass(UUIDStorageVolatile::class)]
 class TestUUID extends TestCase {
     protected function makeClass(string $name, array $rand, \DateTimeInterface $time, ?string $bignum = "bigNot"): string {
         $time = $time->format("0.u00 U");
@@ -19,7 +21,7 @@ class $name extends \\JKingWeb\\DrUUID\\UUID {
     protected static \$bignum = self::$bignum;
 
     protected static function randomBytes(int \$count): string {
-        return hex2bin({$rand}[\$count]);
+        return hex2bin({$rand}[\$count] ?? bin2hex(random_bytes(\$count)));
     }
     
     protected static function now(): string {
@@ -137,5 +139,37 @@ PHP_CODE;
             ["00000000-0000-0000-e000-000000000000", 3, null, null,           null],
             ["ffffffff-ffff-ffff-ffff-ffffffffffff", 3, null, null,           null],
         ];
+    }
+
+    #[TestWith(["bigNative"])]
+    #[TestWith(["bigGMP"])]
+    #[TestWith(["bigBC"])]
+    #[TestWith(["bigChoose"])]
+    public function testLargeIntegerHandling(string $method): void {
+        switch ($method) {
+            case "bigNative":
+                if (\PHP_INT_SIZE < 8) {
+                    $this->markTestSkipped("This test is only accurate in 64-bit environments");
+                }
+                break;
+            case "bigGMP":
+                if (!extension_loaded("gmp")) {
+                    $this->markTestSkipped("This test requires the GMP extension to be loaded");
+                }
+                break;
+            case "bigBC":
+                if (!extension_loaded("bcmath")) {
+                    $this->markTestSkipped("This test requires the BCMath extension to be loaded");
+                }
+                break;
+        }
+        $t = new \DateTime;
+        $exp = $t->format("U.u0");
+        $class = implode("_", [@array_pop(explode("\\", __CLASS__)), __FUNCTION__, $method]);
+        eval($this->makeClass($class, [], $t, $method));
+        $uuid = $class::mint(1);
+        $this->assertSame($exp, $uuid->time);
+        $uuid = $class::mint(6);
+        $this->assertSame($exp, $uuid->time);
     }
 }

@@ -409,15 +409,15 @@ class UUID {
                 break;
             case self::bigBC:
                 $in = bcadd($time, self::interval, 0);
-                $$out = "";
+                $out = "";
                 /* BC Math does not have a native equivalent of base_convert(),
                    so we have to fake it.  Chunking the number to as many
                    nybbles as PHP can handle in an integer speeds things up lots. */
                 $base = hexdec(str_repeat("f", (\PHP_INT_SIZE * 2) -1)) + 1;
                 do {
-                    $mod = bcmod($in, $base);
-                    $in = bcdiv($in, $base, 0);
-                    $out = base_convert($mod, 10, 16).$out;
+                    $mod = bcmod((string) $in, (string) $base);
+                    $in = bcdiv((string) $in, (string) $base, 0);
+                    $out = base_convert((string) $mod, 10, 16).$out;
                 } while($in > 0);
                 break;
         }
@@ -453,11 +453,11 @@ class UUID {
                 $hex = str_split(str_pad($hex, (int) ceil(strlen($hex) / $size) * $size, "0", \STR_PAD_LEFT), $size);
                 do {
                     $chunk = (string) hexdec(array_pop($hex));
-                    $time = bcadd($time, bcmul($chunk, $mul));
-                    $mul = bcmul($max, $mul);
+                    $time = bcadd((string) $time, bcmul((string) $chunk, (string) $mul));
+                    $mul = bcmul((string) $max, (string) $mul);
                 } while (sizeof($hex));
                 // And finally subtract the magic number to get the correct timestamp
-                $time = bcsub($time, self::interval);
+                $time = bcsub((string) $time, self::interval);
                 break;
             case self::bigNot:
                 $time = static::bigSub(static::bigDec($hex), self::interval);
