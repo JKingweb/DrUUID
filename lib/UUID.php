@@ -386,7 +386,7 @@ class UUID {
 				break;
 			case self::bigBC:
 				$in = bcadd($time, self::interval, 0);
-				$$out = "";
+				$out = "";
 				/* BC Math does not have a native equivalent of base_convert(), 
 				   so we have to fake it.  Chunking the number to as many 
 				   nybbles as PHP can handle in an integer speeds things up lots. */
