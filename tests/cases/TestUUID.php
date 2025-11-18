@@ -107,38 +107,55 @@ PHP_CODE;
 
     public static function provideValidImports(): iterable {
         return [
-            ["00000000-0000-0000-0000-000000000000", 0, null, null,           null],
-            ["ffffffff-ffff-ffff-7fff-ffffffffffff", 0, null, null,           null],
-            ["00000000-0000-0000-8000-000000000000", 1, 0,    null,           null],
-            ["C232AB00-9414-11EC-B3C8-9F6BDECED846", 1, 1,    "9f6bdeced846", "1645557742.0000000"],
-            ["00000000-0000-2000-8000-000000000000", 1, 2,    null,           null],
-            ["ffffffff-ffff-2fff-bfff-ffffffffffff", 1, 2,    null,           null],
-            ["5df41881-3aed-3515-88a7-2f4a814cf09e", 1, 3,    null,           null],
-            ["919108f7-52d1-4320-9bac-f847db4148a8", 1, 4,    null,           null],
-            ["2ed6657d-e927-568b-95e1-2665a8aea6a2", 1, 5,    null,           null],
-            ["1EC9414C-232A-6B00-B3C8-9F6BDECED846", 1, 6,    "9f6bdeced846", "1645557742.0000000"],
-            ["017F22E2-79B0-7CC3-98C4-DC0C0C07398F", 1, 7,    null,           "1645557742.000"],
-            ["00000000-0000-8000-8000-000000000000", 1, 8,    null,           null],
-            ["ffffffff-0000-8fff-bfff-ffffffffffff", 1, 8,    null,           null],
-            ["00000000-0000-9000-8000-000000000000", 1, 9,    null,           null],
-            ["ffffffff-0000-9fff-bfff-ffffffffffff", 1, 9,    null,           null],
-            ["00000000-0000-a000-8000-000000000000", 1, 10,   null,           null],
-            ["ffffffff-0000-afff-bfff-ffffffffffff", 1, 10,   null,           null],
-            ["00000000-0000-b000-8000-000000000000", 1, 11,   null,           null],
-            ["ffffffff-0000-bfff-bfff-ffffffffffff", 1, 11,   null,           null],
-            ["00000000-0000-c000-8000-000000000000", 1, 12,   null,           null],
-            ["ffffffff-0000-cfff-bfff-ffffffffffff", 1, 12,   null,           null],
-            ["00000000-0000-d000-8000-000000000000", 1, 13,   null,           null],
-            ["ffffffff-0000-dfff-bfff-ffffffffffff", 1, 13,   null,           null],
-            ["00000000-0000-e000-8000-000000000000", 1, 14,   null,           null],
-            ["ffffffff-0000-efff-bfff-ffffffffffff", 1, 14,   null,           null],
-            ["00000000-0000-f000-8000-000000000000", 1, 15,   null,           null],
-            ["ffffffff-0000-ffff-bfff-ffffffffffff", 1, 15,   null,           null],
-            ["00000000-0000-0000-c000-000000000000", 2, null, null,           null],
-            ["ffffffff-ffff-ffff-dfff-ffffffffffff", 2, null, null,           null],
-            ["00000000-0000-0000-e000-000000000000", 3, null, null,           null],
-            ["ffffffff-ffff-ffff-ffff-ffffffffffff", 3, null, null,           null],
+            ["00000000-0000-0000-0000-000000000000",          0, null, null,           null],
+            ["ffffffff-ffff-ffff-7fff-ffffffffffff",          0, null, null,           null],
+            ["00000000-0000-0000-8000-000000000000",          1, 0,    null,           null],
+            ["C232AB00-9414-11EC-B3C8-9F6BDECED846",          1, 1,    "9f6bdeced846", "1645557742.0000000"],
+            ["00000000-0000-2000-8000-000000000000",          1, 2,    null,           null],
+            ["ffffffff-ffff-2fff-bfff-ffffffffffff",          1, 2,    null,           null],
+            ["5df41881-3aed-3515-88a7-2f4a814cf09e",          1, 3,    null,           null],
+            ["919108f7-52d1-4320-9bac-f847db4148a8",          1, 4,    null,           null],
+            ["2ed6657d-e927-568b-95e1-2665a8aea6a2",          1, 5,    null,           null],
+            ["1EC9414C-232A-6B00-B3C8-9F6BDECED846",          1, 6,    "9f6bdeced846", "1645557742.0000000"],
+            ["017F22E2-79B0-7CC3-98C4-DC0C0C07398F",          1, 7,    null,           "1645557742.000"],
+            ["00000000-0000-8000-8000-000000000000",          1, 8,    null,           null],
+            ["ffffffff-0000-8fff-bfff-ffffffffffff",          1, 8,    null,           null],
+            ["00000000-0000-9000-8000-000000000000",          1, 9,    null,           null],
+            ["ffffffff-0000-9fff-bfff-ffffffffffff",          1, 9,    null,           null],
+            ["00000000-0000-a000-8000-000000000000",          1, 10,   null,           null],
+            ["ffffffff-0000-afff-bfff-ffffffffffff",          1, 10,   null,           null],
+            ["00000000-0000-b000-8000-000000000000",          1, 11,   null,           null],
+            ["ffffffff-0000-bfff-bfff-ffffffffffff",          1, 11,   null,           null],
+            ["00000000-0000-c000-8000-000000000000",          1, 12,   null,           null],
+            ["ffffffff-0000-cfff-bfff-ffffffffffff",          1, 12,   null,           null],
+            ["00000000-0000-d000-8000-000000000000",          1, 13,   null,           null],
+            ["ffffffff-0000-dfff-bfff-ffffffffffff",          1, 13,   null,           null],
+            ["00000000-0000-e000-8000-000000000000",          1, 14,   null,           null],
+            ["ffffffff-0000-efff-bfff-ffffffffffff",          1, 14,   null,           null],
+            ["00000000-0000-f000-8000-000000000000",          1, 15,   null,           null],
+            ["ffffffff-0000-ffff-bfff-ffffffffffff",          1, 15,   null,           null],
+            ["00000000-0000-0000-c000-000000000000",          2, null, null,           null],
+            ["ffffffff-ffff-ffff-dfff-ffffffffffff",          2, null, null,           null],
+            ["00000000-0000-0000-e000-000000000000",          3, null, null,           null],
+            ["ffffffff-ffff-ffff-ffff-ffffffffffff",          3, null, null,           null],
+            ["{C232AB00-9414-11EC-B3C8-9F6BDECED846}",        1, 1,    "9f6bdeced846", "1645557742.0000000"],
+            ["C232AB00941411ECB3C89F6BDECED846",              1, 1,    "9f6bdeced846", "1645557742.0000000"],
+            [hex2bin("C232AB00941411ECB3C89F6BDECED846"),     1, 1,    "9f6bdeced846", "1645557742.0000000"],
+            ["urn:uuid:C232AB00-9414-11EC-B3C8-9F6BDECED846", 1, 1,    "9f6bdeced846", "1645557742.0000000"],
+            ["URN:UUID:C232AB00-9414-11EC-B3C8-9F6BDECED846", 1, 1,    "9f6bdeced846", "1645557742.0000000"],
         ];
+    }
+
+    #[TestWith([""])]
+    #[TestWith(["\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"])]
+    #[TestWith(["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"])]
+    #[TestWith(["ffffffff_ffff_ffff_ffff_ffffffffffff"])]
+    #[TestWith(["ffffffff-ffffffffffffffffffffffff"])]
+    #[TestWith(["{ffffffffffffffffffffffffffffffff"])]
+    #[TestWith([" ffffffffffffffffffffffffffffffff"])]
+    #[TestWith(["urn:uuid:ffffffffffffffffffffffffffffffff"])]
+    public function testImportFailure(string $in): void {
+        $this->assertFalse(UUID::import($in));
     }
 
     #[TestWith(["bigNative"])]

@@ -141,13 +141,17 @@ class UUID {
 
     /** Converts a UUID string into a UUID object
      *
-     * This can be used to extract data from the UUID, or the easily convert to a different representation.
+     * This can be used to extract data from the UUID, or to easily convert to a different representation.
      *
-     * @param string $uuid The UUID to import. This can be in canonical form, as a binary string, or as a string of hexadecimal digits
+     * @param string $uuid The UUID to import. This can be in canonical form, as a binary string, as an URN, or as a string of hexadecimal digits
      * @return self|false
      */
     public static function import(string $uuid) {
-        return new static(static::makeBin($uuid));
+        $out = static::makeBin($uuid);
+        if (!$out) {
+            return false;
+        }
+        return new static($out);
     }
 
     /** Compares two UUIDs of arbitrary representation for equality
@@ -485,7 +489,7 @@ class UUID {
             return $str;
         }
         // reject anything which doesn't look like a UUID (32 hex digits, with or without dashes, enclosed by curly braces, or as a URN)
-        if (!preg_match("/^(?:urn:uuid:)?([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})$|^\{\1\}$|^[0-9a-f]{32}$/i", $str)) {
+        if (!preg_match("/^(?:urn:uuid:)?[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$|^\{[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\}$|^[0-9a-f]{32}$/i", $str)) {
             return false;
         }
         $str = preg_replace("/^urn:uuid:/is", "", $str); // strip URN scheme and namespace
