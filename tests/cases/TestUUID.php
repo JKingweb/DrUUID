@@ -19,6 +19,7 @@ class TestUUID extends TestCase {
         return <<<PHP_CODE
 class $name extends \\JKingWeb\\DrUUID\\UUID {
     protected static \$bignum = self::$bignum;
+    protected static \$store = null;
 
     protected static function randomBytes(int \$count): string {
         return hex2bin({$rand}[\$count] ?? bin2hex(random_bytes(\$count)));
@@ -88,7 +89,7 @@ PHP_CODE;
 
     #[DataProvider("provideUnsupportedVersions")]
     public function testRejectUnsupportedVersionsAsString(int $ver): void {
-        $this->expectException("\\InvalidArgumentException");
+        $this->expectException(\InvalidArgumentException::class);
         UUID::mintStr($ver);
     }
 
@@ -188,5 +189,26 @@ PHP_CODE;
         $this->assertSame($exp, $uuid->time);
         $uuid = $class::mint(6);
         $this->assertSame($exp, $uuid->time);
+    }
+
+    #[TestWith(["mint",    [3]])]
+    #[TestWith(["mint",    [3, null, null]])]
+    #[TestWith(["mint",    [3, null, UUID::nsURL]])]
+    #[TestWith(["mint",    [3, "example", "bogus"]])]
+    #[TestWith(["mintStr", [3]])]
+    #[TestWith(["mintStr", [3, null, null]])]
+    #[TestWith(["mintStr", [3, null, UUID::nsURL]])]
+    #[TestWith(["mintStr", [3, "example", "bogus"]])]
+    #[TestWith(["mint",    [5]])]
+    #[TestWith(["mint",    [5, null, null]])]
+    #[TestWith(["mint",    [5, null, UUID::nsURL]])]
+    #[TestWith(["mint",    [5, "example", "bogus"]])]
+    #[TestWith(["mintStr", [5]])]
+    #[TestWith(["mintStr", [5, null, null]])]
+    #[TestWith(["mintStr", [5, null, UUID::nsURL]])]
+    #[TestWith(["mintStr", [5, "example", "bogus"]])]
+    public function testMintNameIncorrectly(string $method, array $in): void {
+        $this->expectException(\InvalidArgumentException::class);
+        UUID::$method(...$in);
     }
 }
