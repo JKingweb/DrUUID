@@ -8,10 +8,10 @@ namespace JKingWeb\DrUUID;
  * @property-read string $hex The bare hexadecimal representation of the UUID. Digits are always lowercase
  * @property-read string $string The canonical string representation of the UUID, with dashes. Digits are always lowercase
  * @property-read string $urn The URN representation of the UUID
- * @property-read int $version The version of the UUID. For RFC 9562 UUIDs this is one of 1, 3, 4, 5, 6, or 7
  * @property-read int $variant The variant of the UUID. For RFC 9562 UUIDs this is always 1
- * @property-read string $node The node (a MAC address), available in Version 1 and Version 6 UUIDs
- * @property-read string $time The time at which the UUID was generated, as a Unix timestamp with subsecond precision. Available in Version 1 and Version 6 UUIDs (with a sub-second precision of seven digits) and Version 7 UUIDs (with a sub-second precision of three digits)
+ * @property-read int|null $version The version of the UUID. For RFC 9562 UUIDs this is one of 1, 3, 4, 5, 6, 7, or 8
+ * @property-read string|null $node The node (a MAC address), available in Version 1 and Version 6 UUIDs
+ * @property-read string|null $time The time at which the UUID was generated, as a Unix timestamp with subsecond precision. Available in Version 1 and Version 6 UUIDs (with a sub-second precision of seven digits) and Version 7 UUIDs (with a sub-second precision of three digits)
  */
 class UUID {
     protected const MD5  = 3;
