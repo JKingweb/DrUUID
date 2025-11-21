@@ -227,4 +227,22 @@ PHP_CODE;
             ["c232ab00-9414-11ec-b3c8-9f6bdeced846",        "bogus",                                null],
         ];
     }
+
+    public function testGetNullSequence(): void {
+        // This test exercises a corner case which can only be encountered
+        //   with a subclass of the UUIDStorageVolatile class which provides a
+        //   pre-populated node
+        $rand = [
+            2  => "33C8", // clock sequence for V1 and V6
+        ];
+        $class = @array_pop(explode("\\", __CLASS__))."_".__FUNCTION__;
+        if (!class_exists($class)) {
+            eval($this->makeClass($class, $rand, new \DateTime("2022-02-22T14:22:22-05:00")));
+        }
+        $store = new class extends UUIDStorageVolatile {
+            protected $node = "\x9F\x6B\xDE\xCE\xD8\x46";
+        };
+        $class::registerStorage($store);
+        $this->assertSame("c232ab00-9414-11ec-b3c8-9f6bdeced846", $class::mintStr(1));
+    }
 }
