@@ -158,16 +158,18 @@ class UUID {
      *
      * The two UUIDs can be a UUID object, a canonical string, a binary string, or a string of hexadecimal digits.
      * 
-     * This functiion will return true if neither argument is a UUID
+     * This functiion will return null if either argument cannot be parsed as a UUID
      *
      * @param static|string $a The first UUID to compare
      * @param static|string $b The second UUID to compare
      */
-    public static function compare($a, $b): bool {
-        if (static::makeBin($a) === static::makeBin($b)) {
-            return true;
+    public static function compare($a, $b): ?bool {
+        $a = static::makeBin($a);
+        $b = static::makeBin($b);
+        if (!$a || !$b) {
+            return null;
         }
-        return false;
+        return $a === $b;
     }
 
     /** Generates a random clock sequence

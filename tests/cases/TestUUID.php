@@ -211,4 +211,20 @@ PHP_CODE;
         $this->expectException(\InvalidArgumentException::class);
         UUID::$method(...$in);
     }
+
+    #[DataProvider("provideComparisons")]
+    public function testCompareRepresentations(mixed $a, mixed $b, ?bool $exp): void {
+        $this->assertSame($exp, UUID::compare($a, $b));
+    }
+
+    public static function provideComparisons(): iterable {
+        return [
+            ["C232AB00-9414-11EC-B3C8-9F6BDECED846",        "C232AB00-9414-11EC-B3C8-9F6BDECED846", true],
+            ["C232AB00-9414-11EC-B3C8-9F6BDECED846",        "c232ab00-9414-11ec-b3c8-9f6bdeced846", true],
+            ["C232AB00941411ECB3C89F6BDECED846",            "c232ab00-9414-11ec-b3c8-9f6bdeced846", true],
+            [UUID::mint(3, "www.example.com", UUID::nsDNS), "5df41881-3aed-3515-88a7-2f4a814cf09e", true],
+            ["c232ab00-9414-11ec-b3c8-9f6bdeced846",        "5df41881-3aed-3515-88a7-2f4a814cf09e", false],
+            ["c232ab00-9414-11ec-b3c8-9f6bdeced846",        "bogus",                                null],
+        ];
+    }
 }
