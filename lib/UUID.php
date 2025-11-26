@@ -583,9 +583,7 @@ class UUID {
      * 
      * This is used to remove the interval between Gregorian and Unix
      * epochs from a timestamp. It is not suitable for general purposes;
-     * in particular it does not handle negative numbers at all, including
-     * a negative result from two positive integers. Thus, $b must be
-     * less than $a to achieve sensible results.
+     * in particular it does not handle negative arguments.
      * 
      * This is only used in 32-bit environments in the absence of GMP and BCMath.
      */
