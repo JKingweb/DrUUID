@@ -194,7 +194,7 @@ class UUID {
 					case 7:
 						// Convert the time to decimal
 						$time = bin2hex(substr($this->bytes, 0, 6));
-						$time = base_convert($time, 16, 10);
+						$time = str_pad(base_convert($time, 16, 10), 4, "0", \STR_PAD_LEFT);
 						$time = substr($time, 0, strlen($time) - 3).".".substr($time, -3);
 						return $time;
 					default:
@@ -449,6 +449,7 @@ class UUID {
 			default:
 				throw new static::$exceptionClass("Bignum method not implemented.",901);
 		}
+		$time = str_pad((string) $time, 8, "0", \STR_PAD_LEFT);
 		return substr($time,0,strlen($time)-7).".".substr($time,strlen($time)-7);
 	}
 
@@ -720,8 +721,13 @@ class UUID {
 			$bb = substr($b, max(0, $i), $ss);
 			$nn = $aa - $bb - $c;
 			if ($nn < 0) {
-				$nn = $m + $nn;
-				$c = 1;
+				if ($i > 0) {
+					$nn = 1000000000 + $nn;
+					$c = 1;
+				} else {
+					$n = $nn.$n;
+					break;
+				}
 			} else {
 				$c = 0;
 			}
