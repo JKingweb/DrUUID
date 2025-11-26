@@ -521,8 +521,8 @@ OTHER DEALINGS IN THE SOFTWARE.</pre>
     <li>The <code>UUIDStorageStable</code> class has been removed; with the advent of Version 7 UUIDs stable storage is not as important as it once might have been, and the functionality was poorly tested and only useful in narrow circumstances. The <code>UUID::registerStorage()</code> method is still available for using custom implementations of stable storage
     <li>The <code>UUIDException</code> and <code>UUIDStorageException</code> classes have been removed. All misuse not caught by PHP itself will now result in <code>InvalidArgumentException</code> being thrown instead
     <li>Most constants in the <code>UUID</code> class have been removed or made protected, depending on whether they have been made obsolete or were always meant to be internal. Only the namespace constants remain
-    <li>The <code>lib.uuid.php</code> backwards-compatibility file has been removed
-    <li>The <code>UUID::compare()</code> method now returns <samp>NULL</samp> if either input is invalid
+    <li>The <code>lib.uuid.php</code> backwards-compatibility file has been removed as namespaces are now a longstanding PHP feature
+    <li>The <code>UUID::compare()</code> method now returns <samp>null</samp> if either input is invalid
     <li>The signature of the <code>UUID::registerStorage()</code> method has been changed. It now expects an instance of a class implementing the <code>UUIDStorage</code> interface
     <li>It is no longer possible to specify a node, clock sequence, or time when calling <samp>UUID::mint(1)</samp> or <samp>UUID::mint(6)</samp>. If a specific node identifier is desired, it should be implemented in the storage interface. Consequently, the second and third parameters of the <code>UUID::mint()</code> method are now used only for creating Version 3 and Version 5 UUIDs
     <li>The default value for the <var>$ver</var> parameter of <code>UUID::mint()</code> method is now <samp>7</samp> to coincide with the recommendation in RFC 9562
