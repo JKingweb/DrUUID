@@ -98,8 +98,12 @@ PHP_CODE;
     }
 
     #[DataProvider("provideValidImports")]
-    public function testImportVariousVersions(string $in, int $variant, ?int $version, ?string $node, ?string $time): void {
-        $act = UUID::import($in);
+    public function testImportVariousVersions(string $in, int $variant, ?int $version, ?string $node, ?string $time, string $bignum): void {
+        $class = implode("_", [@array_pop(explode("\\", __CLASS__)), __FUNCTION__, $bignum]);
+        if (!class_exists($class)) {
+            eval($this->makeClass($class, [], new \DateTime, $bignum));
+        }
+        $act = $class::import($in);
         $this->assertSame($variant, $act->variant);
         $this->assertSame($version, $act->version);
         $this->assertSame($node, $act->node);
@@ -107,18 +111,28 @@ PHP_CODE;
     }
 
     public static function provideValidImports(): iterable {
-        return [
+        $tests = [
             ["00000000-0000-0000-0000-000000000000",          0, null, null,           null],
             ["ffffffff-ffff-ffff-7fff-ffffffffffff",          0, null, null,           null],
             ["00000000-0000-0000-8000-000000000000",          1, 0,    null,           null],
+            ["00000000-0000-1000-8000-000000000000",          1, 1,    "000000000000", "-12219292800.0000000"],
+            ["13814000-1dd2-11b2-8000-000000000000",          1, 1,    "000000000000", "0.0000000"],
             ["C232AB00-9414-11EC-B3C8-9F6BDECED846",          1, 1,    "9f6bdeced846", "1645557742.0000000"],
+            ["ec7ebfff-e22d-1e4d-b000-000000000000",          1, 1,    "000000000000", "90853564860.6846975"],
+            ["ffffffff-ffff-1fff-bfff-ffffffffffff",          1, 1,    "ffffffffffff", "103072857660.6846975"],
             ["00000000-0000-2000-8000-000000000000",          1, 2,    null,           null],
             ["ffffffff-ffff-2fff-bfff-ffffffffffff",          1, 2,    null,           null],
             ["5df41881-3aed-3515-88a7-2f4a814cf09e",          1, 3,    null,           null],
             ["919108f7-52d1-4320-9bac-f847db4148a8",          1, 4,    null,           null],
             ["2ed6657d-e927-568b-95e1-2665a8aea6a2",          1, 5,    null,           null],
+            ["00000000-0000-6000-8000-000000000000",          1, 6,    "000000000000", "-12219292800.0000000"],
+            ["1b21dd21-3814-6000-8000-000000000000",          1, 6,    "000000000000", "0.0000000"],
             ["1EC9414C-232A-6B00-B3C8-9F6BDECED846",          1, 6,    "9f6bdeced846", "1645557742.0000000"],
+            ["e4de22de-c7eb-6fff-b000-000000000000",          1, 6,    "000000000000", "90853564860.6846975"],
+            ["ffffffff-ffff-6fff-bfff-ffffffffffff",          1, 6,    "ffffffffffff", "103072857660.6846975"],
+            ["00000000-0000-7000-8000-000000000000",          1, 7,    null,           "0.000"],
             ["017F22E2-79B0-7CC3-98C4-DC0C0C07398F",          1, 7,    null,           "1645557742.000"],
+            ["ffffffff-ffff-7fff-bfff-ffffffffffff",          1, 7,    null,           "281474976710.655"],
             ["00000000-0000-8000-8000-000000000000",          1, 8,    null,           null],
             ["ffffffff-0000-8fff-bfff-ffffffffffff",          1, 8,    null,           null],
             ["00000000-0000-9000-8000-000000000000",          1, 9,    null,           null],
@@ -145,6 +159,10 @@ PHP_CODE;
             ["urn:uuid:C232AB00-9414-11EC-B3C8-9F6BDECED846", 1, 1,    "9f6bdeced846", "1645557742.0000000"],
             ["URN:UUID:C232AB00-9414-11EC-B3C8-9F6BDECED846", 1, 1,    "9f6bdeced846", "1645557742.0000000"],
         ];
+        foreach ($tests as $t) {
+            yield [...$t, "bigChoose"];
+            yield [...$t, "bigNot"];
+        }
     }
 
     #[TestWith([""])]
@@ -232,12 +250,9 @@ PHP_CODE;
         // This test exercises a corner case which can only be encountered
         //   with a subclass of the UUIDStorageVolatile class which provides a
         //   pre-populated node
-        $rand = [
-            2  => "33C8", // clock sequence for V1 and V6
-        ];
         $class = @array_pop(explode("\\", __CLASS__))."_".__FUNCTION__;
         if (!class_exists($class)) {
-            eval($this->makeClass($class, $rand, new \DateTime("2022-02-22T14:22:22-05:00")));
+            eval($this->makeClass($class, [2  => "33C8"], new \DateTime("2022-02-22T14:22:22-05:00")));
         }
         $store = new class extends UUIDStorageVolatile {
             protected $node = "\x9F\x6B\xDE\xCE\xD8\x46";
@@ -246,3 +261,6 @@ PHP_CODE;
         $this->assertSame("c232ab00-9414-11ec-b3c8-9f6bdeced846", $class::mintStr(1));
     }
 }
+
+// 1030728576606846975
+//  122192928000000000
