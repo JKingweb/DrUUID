@@ -174,7 +174,8 @@ PHP_CODE;
     #[TestWith([" ffffffffffffffffffffffffffffffff"])]
     #[TestWith(["urn:uuid:ffffffffffffffffffffffffffffffff"])]
     public function testImportFailure(string $in): void {
-        $this->assertFalse(UUID::import($in));
+        $this->expectException(\InvalidArgumentException::class);
+        UUID::import($in);
     }
 
     #[TestWith(["bigNative"])]
@@ -261,6 +262,3 @@ PHP_CODE;
         $this->assertSame("c232ab00-9414-11ec-b3c8-9f6bdeced846", $class::mintStr(1));
     }
 }
-
-// 1030728576606846975
-//  122192928000000000

@@ -364,7 +364,7 @@
   <h3 id="api-compare">UUID::compare()</h3>
   <div>
    <p class="samp"><samp><var>bool|null</var> UUID::compare( <var>UUID|string uuid1</var>, <var>UUID|string uuid2</var> )</samp>
-   <p>The <code>UUID::compare()</code> method compares <a href="#note-uuid">two UUIDs</a> for equivalency.  If both UUIDs, as binary numbers, are equal, the method returns <samp>TRUE</samp>.  The method will return <samp>NULL</samp> if either arguments is not a valid UUID.
+   <p>The <code>UUID::compare()</code> method compares <a href="#note-uuid">two UUIDs</a> for equivalency.  If both UUIDs, as binary numbers, are equal, the method returns <samp>true</samp>. The method will return <samp>null</samp> if either arguments is not a valid UUID.
    <p>This method is useful for determining if two different UUID representations (eg. canonical string, lowercase hex string, uppercase hex string, binary, URN) are in fact the same UUID.
   </div>
   <h3 id="api-mintstr">UUID::mintStr()</h3>
@@ -522,6 +522,7 @@ OTHER DEALINGS IN THE SOFTWARE.</pre>
     <li>The <code>UUIDException</code> and <code>UUIDStorageException</code> classes have been removed. All misuse not caught by PHP itself will now result in <code>InvalidArgumentException</code> being thrown instead
     <li>Most constants in the <code>UUID</code> class have been removed or made protected, depending on whether they have been made obsolete or were always meant to be internal. Only the namespace constants remain
     <li>The <code>lib.uuid.php</code> backwards-compatibility file has been removed as namespaces are now a longstanding PHP feature
+    <li>The <code>UUID::import()</code> method is now stricter in interpreting its input. Non-hexdecimal characters other than dashes or enclosing curly braces will now throw an exception
     <li>The <code>UUID::compare()</code> method now returns <samp>null</samp> if either input is invalid
     <li>The signature of the <code>UUID::registerStorage()</code> method has been changed. It now expects an instance of a class implementing the <code>UUIDStorage</code> interface
     <li>It is no longer possible to specify a node, clock sequence, or time when calling <samp>UUID::mint(1)</samp> or <samp>UUID::mint(6)</samp>. If a specific node identifier is desired, it should be implemented in the storage interface. Consequently, the second and third parameters of the <code>UUID::mint()</code> method are now used only for creating Version 3 and Version 5 UUIDs

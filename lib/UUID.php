@@ -144,12 +144,11 @@ class UUID {
      * This can be used to extract data from the UUID, or to easily convert to a different representation.
      *
      * @param string $uuid The UUID to import. This can be in canonical form, as a binary string, as an URN, or as a string of hexadecimal digits
-     * @return self|false
      */
-    public static function import(string $uuid) {
+    public static function import(string $uuid): self {
         $out = static::makeBin($uuid);
         if (!$out) {
-            return false;
+            throw new \InvalidArgumentException("Input could not be interpreted as a UUID for import");
         }
         return new static($out);
     }
