@@ -157,7 +157,7 @@ class UUID {
 			case "urn":
 				return "urn:uuid:".$this->string;
 			case "version":
-				return ord($this->bytes[6]) >> 4;
+				return $this->__get("variant") === 1 ? ord($this->bytes[6]) >> 4 : null;
 			case "variant":
 				$byte = ord($this->bytes[8]);
 				if ($byte >= self::varRes)
@@ -169,6 +169,7 @@ class UUID {
 				else
 					return 0;
 			case "node":
+				if ($this->__get("variant") !== 1) return null;
 				switch (ord($this->bytes[6])>>4) {
 					case 1:
 					case 6:
@@ -177,6 +178,7 @@ class UUID {
 						return NULL;
 				}
 			case "time":
+				if ($this->__get("variant") !== 1) return null;
 				switch (ord($this->bytes[6])>>4) {
 					case 1:
 						// Restore contiguous big-endian byte order
@@ -217,6 +219,10 @@ class UUID {
 			bin2hex(substr($uuid,6,2))."-".
 			bin2hex(substr($uuid,8,2))."-".
 			bin2hex(substr($uuid,10,6));
+	}
+
+	protected static function now() {
+		return microtime();
 	}
 
 	protected static function mintCustom($dnode, $ns) {
@@ -264,7 +270,7 @@ class UUID {
 		   32-bit systems.
 		*/
 		if ($time === null) {
-			$time = microtime();
+			$time = static::now();
 		}
 		$time = static::normalizeTime($time, 3);
 		$time = base_convert($time, 10, 16);
@@ -292,7 +298,6 @@ class UUID {
 	protected static function mintName($ver, $node, $ns) {
 		/* Generates a Version 3 or Version 5 UUID.
 					These are derived from a hash of a name and its namespace, in binary form. */
-		if ($ver == 3)
 		if (!$node)
 			throw new static::$exceptionClass("A name-string is required for Version 3 or 5 UUIDs.",201);
 		// if the namespace UUID isn't binary, make it so
@@ -320,7 +325,7 @@ class UUID {
 		/* If no timestamp has been specified, generate one.
 		   Note that this will never be more accurate than to 
 		   the microsecond, whereas UUID timestamps are measured in 100ns steps. */
-		$time = ($time !== NULL) ? static::normalizeTime($time) : static::normalizeTime(microtime());
+		$time = ($time !== NULL) ? static::normalizeTime($time) : static::normalizeTime(static::now());
 		/* If a node ID is supplied, use it and keep it in the store; if none is 
 		   supplied, get it from the store or generate it if none is stored. */
 		if ($node === NULL) {
@@ -459,6 +464,7 @@ class UUID {
 		$len = 16;
 		if ($str instanceof self)
 			return $str->bytes;
+		$str = (string) $str;
 		if (strlen($str)==$len)
 			return $str;
 		else
